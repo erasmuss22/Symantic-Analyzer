@@ -1,9 +1,8 @@
+int f(int x, double d) { }
+void g() {
 int x;
-int y;
-void f1(int k){
-int x;
-int y;
-x = 3;
-y = 2;
-x = y;
+double y;
+y = x;
+f(x, y*2);
+g();
 }

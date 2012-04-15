@@ -2,10 +2,12 @@ int x;
 int x;
 void y;
 void x;
+int y;
 double y;
 double x;
 void f1(int y, double k){
  int x;
+ double x;
  k = y;
  y = k;
  w = 1 + 2;
@@ -27,9 +29,13 @@ void f1(int y, double k){
  if (a == b){
  }
  else {
+    if (v == l){
+    	f4(x, y);
+    }
   fxn4();
   f1();
  }
+ x = a;
  a = -a;
  c++;
  c--;

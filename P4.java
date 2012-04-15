@@ -56,7 +56,9 @@ public class P4 {
 	    System.exit(-1);
 	}
 	((ProgramNode)root.value).analyzeNames();
+	if (!Errors.getStatus()){
 	((ASTnode)root.value).unparse(outFile, 0);
+	}
 	outFile.close();
 
 	return;

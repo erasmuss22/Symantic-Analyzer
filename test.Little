@@ -42,10 +42,11 @@ if (x > z) {		     /* test of more exp */
      x = w;
      if (z >= n) {
        double d;
+       double change;
+       change = 2.7;
        y = (w);
        x = 4;
        d = 5.23;
-       s = "hello";
      }
    }
  }

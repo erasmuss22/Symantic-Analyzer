@@ -18,7 +18,7 @@ import java.util.*;
   * @author Erin Rasmussen
   */
 public class Sym {
-	private String identifier;
+	private String type;
 	private String name;	
 	/**
 	  * This is the constructor; it should initialize the Sym to have the given
@@ -26,12 +26,12 @@ public class Sym {
 	  *
 	  * @param (type) (The type of identifier, ie int, double, char, ...)
 	  */
-	public Sym(String identifier){ 	
-		this.identifier = identifier;
+	public Sym(String type){ 	
+		this.type = type;
 	}
 
-	public Sym(String identifier, String name){
-		this.identifier = identifier;
+	public Sym(String type, String name){
+		this.type = type;
 		this.name = name;
 	}
 	
@@ -41,7 +41,7 @@ public class Sym {
 	  * @return (the type of identifier)
 	  */
 	public String getType(){
-		return this.identifier;
+		return this.type;
 	}
 	
 	public String getName(){
@@ -55,7 +55,7 @@ public class Sym {
 	  * @return (the string form of the object)
 	  */
 	public String toString(){
-		return(this.identifier + " " + this.name);
+		return(this.type + " " + this.name);
 	}
 }
 
