@@ -1,0 +1,11 @@
+int x(int);
+int y(int);
+
+void f1(f1)(int k(int)) {
+  int x(int);
+  int y(int);
+  x = 3;
+  y = 2;
+  x = y;
+}
+

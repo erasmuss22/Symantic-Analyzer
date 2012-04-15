@@ -1,0 +1,40 @@
+int x;
+int x;
+void y;
+void x;
+double y;
+double x;
+void f1(int y, double k){
+ int x;
+ k = y;
+ y = k;
+ w = 1 + 2;
+ z = 1 * 2;
+ m = 1 / 2;
+ n = 1 - 2;
+ if (p < q){}
+ if (q > p){}
+ if (p <= q){
+   int x;
+ }
+ if (q >= p){
+   x = y;
+ }
+ if (q == p){}
+ if (q != p){}
+ if (a < b && b < c){}
+ if (a < b || b < c){}
+ if (a == b){
+ }
+ else {
+  fxn4();
+  f1();
+ }
+ a = -a;
+ c++;
+ c--;
+ function3();
+ while (t < 3){
+   a = t;
+ }
+}
