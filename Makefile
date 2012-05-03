@@ -9,8 +9,8 @@
 
 JC = javac
 
-P4.class: P3.java parser.class Yylex.class ASTnode.class
-	$(JC) -g P4.java
+P5.class: P5.java parser.class Yylex.class ASTnode.class
+	$(JC) -g P5.java
 
 parser.class: parser.java ASTnode.class Yylex.class Errors.class
 	$(JC) parser.java

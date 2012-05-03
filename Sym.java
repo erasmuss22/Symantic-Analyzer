@@ -1,82 +1,118 @@
-///////////////////////////////////////////////////////////////////////////////
-//                   ALL STUDENTS COMPLETE THESE SECTIONS
-// Main Class File:  P1.java
-// File:             Sym.java
-// Semester:         Spring 2012
-//
-// Author:           Erin Rasmussen  ejrasmussen2@wisc.edu
-// CS Login:         rasmusse
-// Lecturer's Name:  Somesh Jha
-// Lab Section:      CS 536
-//////////////////////////// 80 columns wide //////////////////////////////////
 import java.util.*;
-/**
-  * This class represents the type of identifier for the compiler.
-  *
-  * <p>Bugs: none known
-  *
-  * @author Erin Rasmussen
-  */
-public class Sym {
-	private String type;
-	private String name;	
-	/**
-	  * This is the constructor; it should initialize the Sym to have the given
-	  * type.
-	  *
-	  * @param (type) (The type of identifier, ie int, double, char, ...)
-	  */
-	public Sym(String type){ 	
-		this.type = type;
-	}
 
-	public Sym(String type, String name){
-		this.type = type;
-		this.name = name;
-	}
-	
-	/**
-	  * Return this Sym's type.
-	  *
-	  * @return (the type of identifier)
-	  */
-	public String getType(){
-		return this.type;
-	}
-	
-	public String getName(){
-		return this.name;
-	}
+// **********************************************************************
+// The Sym class defines a symbol-table entry;
+// an object that contains a type (a String).
+// **********************************************************************
+//
+// Methods
+// =======
+//
+// constructor
+// -----------
+// Sym(String S)         -- constructor: creates a Sym with the given type
+//
+// accessor
+// --------
+// type()             -- returns this symbol's type
+//
+// other
+// -----
+// makeComplete()    -- marks this sym as complete
+// toString()        -- prints the values associated with this Sym
 
-	/**
-	  * Return this Sym's type. (This method will be changed
-	  * later when more information is stored in a Sym.)
-	  *
-	  * @return (the string form of the object)
-	  */
-	public String toString(){
-		return(this.type + " " + this.name);
-	}
+class Sym {
+    public Sym(String T) {
+	myType = T;
+	myComplete = true;
+	if (myType.equals("int")) this.offset = 4;
+	else if (myType.equals("double")) this.offset = 8;
+	else this.offset = 0;
+        FPoffset = 0;
+    }
+
+    public Sym(String T, boolean comp) {
+	this(T);
+	myComplete = comp;
+    }
+
+    public String type() {
+	return myType;
+    }
+
+    public String toString() {
+	return "";
+    }
+
+    public int getOffset(){
+	return this.offset;
+    }
+
+    public void setOffset(int o){
+	this.offset = o;
+    }
+    
+    public int getFPOffset(){
+        return this.FPoffset;
+    }
+    
+    public void setFPOffset(int o){
+        this.FPoffset = o;
+    }
+
+  // fields
+    protected String myType;
+    private boolean myComplete;
+    private int offset;
+    private int FPoffset;
 }
 
-class FunctionSym extends Sym {
-	private int paramAmount;
-	private LinkedList paramIdents;
+// **********************************************************************
+// The FnSym class is a subclass of the Sym class, just for functions.
+// The myReturnType field holds the return type, and there are new fields
+// to hold information about the parameters.
+// **********************************************************************
+class FnSym extends Sym {
+    public FnSym(String T, int numparams) {
+	super("->"+T);
+	myReturnType = T;
+	myNumParams = numparams;
+	myParamTypes = null;
+    }
 
-	public FunctionSym(String type, String name, int paramAmount) {
-		super(type, name);
-		this.paramAmount = paramAmount;
+    public void addFormals(LinkedList<Sym> L) {
+	myParamTypes = new LinkedList<String>();
+	// UPDATE TYPE STRING
+	boolean first = true;
+	Iterator<Sym> it = L.descendingIterator();
+	while (it.hasNext()) {
+	    Sym oneSym = it.next();
+	    myParamTypes.add(0, oneSym.type());
+	    if (first) {
+		myType = oneSym.type() + myType;
+		first = false;
+	    } else {
+		myType = oneSym.type() + "," + myType;
+	    }
 	}
+    }
+    
+    public String returnType() {
+	return myReturnType;
+    }
 
-	public void addParams(LinkedList params){
-		this.paramIdents = params;
-	}
+    public int numparams() {
+	return myNumParams;
+    }
 
-	public int getParamAmount() {
-		return this.paramAmount;
-	}
+    public LinkedList<String> paramTypes() {
+	return myParamTypes;
+    }
 
-	public LinkedList getParams(){
-		return paramIdents;
-	}
+    // new fields
+    private String myReturnType;
+    private int myNumParams;
+    private LinkedList<String> myParamTypes;
 }
+
+

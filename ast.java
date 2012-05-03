@@ -1,6 +1,5 @@
 import java.io.*;
 import java.util.*;
-
 // **********************************************************************
 // The ASTnode class defines the nodes of the abstract-syntax tree that
 // represents a Little program.
@@ -22,7 +21,7 @@ import java.util.*;
 //     ProgramNode         DeclListNode
 //     DeclListNode        list of DeclNode
 //     DeclNode:
-//       VarDeclNode       TypeNode, IdNode
+//       VarDeclNode       TypeNode, IdNode, int
 //       FnDeclNode        TypeNode, IdNode, FormalsListNode, FnBodyNode
 //       FormalDeclNode    TypeNode, IdNode
 //     FormalsListNode     list of FormalDeclNode
@@ -58,26 +57,29 @@ import java.util.*;
 //       DblLitNode          -- none --
 //       StringLitNode       -- none --
 //       IdNode              -- none --
-//       AssignNode          IdNode, ExpNode
 //       CallExpNode         IdNode, ExpListNode
-//       UnaryExpNode
+//       UnaryExpNode        
 //         UnaryMinusNode    ExpNode
 //         NotNode           ExpNode
 //         PlusPlusNode      IdNode
 //         MinusMinusNode    IdNode
 //       BinaryExpNode       ExpNode, ExpNode
-//         PlusNode     
-//         MinusNode
-//         TimesNode
-//         DivideNode
-//         AndNode
-//         OrNode
-//         EqualsNode
-//         NotEqualsNode
-//         LessNode
-//         GreaterNode
-//         LessEqNode
-//         GreaterEqNode
+//         AssignNode
+//         ArithBinExpNode
+//           PlusNode     
+//           MinusNode
+//           TimesNode
+//           DivideNode
+//         EqualityBinExpNode
+//           EqualsNode
+//           NotEqualsNode
+//           LessNode
+//           GreaterNode
+//           LessEqNode
+//           GreaterEqNode
+//         LogicalBinExpNode
+//           AndNode
+//           OrNode
 //
 // Here are the different kinds of AST nodes again, organized according to
 // whether they are leaves, internal nodes with lists of kids, or internal
@@ -97,11 +99,13 @@ import java.util.*;
 //       ReadIntStmtNode,  ReadDblStmtNode, WriteIntStmtNode, WriteDblStmtNode
 //       WriteStrStmtNode  IfStmtNode,      IfElseStmtNode,   WhileStmtNode,
 //       CallStmtNode,     ReturnStmtNode,  CallExpNode,
-//       UnaryExpNode,     BinaryExpNode,   UnaryMinusNode, NotNode,
-//       AssignNode,       PlusNode,        MinusNode,      TimesNode,
-//       DivideNode,       PlusPlusNode,    MinusMinusNode, AndNode,
-//       OrNode,           EqualsNode,      NotEqualsNode,  LessNode,        
-//       GreaterNode,      LessEqNode,      GreaterEqNode
+//       UnaryExpNode,     UnaryMinusNode,  NotNode,          PlusPlusNode,
+//       MinusMinusNode    BinaryExpNode    AssignNode,
+//       ArithmeticBinExpNode               PlusNode,         MinusNode,
+//       TimesNode,        DivideNode,      EqualityBinExpNode,
+//       EqualsNode,       NotEqualsNode,
+//       LessNode,         GreaterNode,     LessEqNode,       GreaterEqNode,
+//       LogicalBinExpNode,                 AndNode,          OrNode
 //
 // **********************************************************************
 
@@ -109,13 +113,50 @@ import java.util.*;
 // ASTnode class (base class for all other kinds of nodes)
 // **********************************************************************
 abstract class ASTnode { 
-	// every subclass must provide an unparse operation
-	abstract public void unparse(PrintWriter p, int indent);
+    protected static final boolean DEBUG = false;
+    protected static final String INT_TYPE = "int";
+    protected static final String DBL_TYPE = "double";
+    protected static final String ERR_TYPE = "ERR";
+    protected static final String VOID_TYPE = "void";
 
-	// this method can be used by the unparse methods to do indenting
-	protected void doIndent(PrintWriter p, int indent) {
-		for (int k=0; k<indent; k++) p.print(" ");
-	}
+    // every subclass must provide an unparse operation
+    abstract public void unparse(PrintWriter p, int indent);
+
+    // this method can be used by the unparse methods to do indenting
+    protected void doIndent(PrintWriter p, int indent) {
+	for (int k=0; k<indent; k++) p.print(" ");
+    }
+
+    // methods for type checking
+    protected static boolean isErrType(String T) {
+	return T.equals(ERR_TYPE);
+    }
+
+    protected static boolean isVoidType(String T) {
+	return T.equals(VOID_TYPE);
+    }
+
+    protected static boolean isFnType(String T) {
+	return T.indexOf("->") != -1;
+    }
+
+    protected static boolean isIntType(String T) {
+	return T.equals(INT_TYPE);
+    }
+
+    protected static boolean isDblType(String T) {
+	return T.equals(DBL_TYPE);
+    }
+
+    protected static boolean isNumericType(String T) {
+	return T.equals(INT_TYPE) || T.equals(DBL_TYPE);
+    }
+
+    protected static boolean compatibleTypes(String T1, String T2) {
+	// T1 is a formal's type, T2 is an actual's type
+	// OK iff same type or dbl, int
+	return T1.equals(T2) || (isDblType(T1) && isIntType(T2));
+    }
 }
 
 // **********************************************************************
@@ -123,799 +164,1491 @@ abstract class ASTnode {
 // StmtListNode, ExpListNode
 // **********************************************************************
 class ProgramNode extends ASTnode {
-	public ProgramNode(DeclListNode L) {
-		myDeclList = L;
-	}
+    public ProgramNode(DeclListNode L) {
+	myDeclList = L;
+    }
 
-	public void unparse(PrintWriter p, int indent) {
-		myDeclList.unparse(p, indent);
+    /** processNames
+     *
+     * create an empty symbol table for the outermost scope, then
+     * process all of the globals and functions in the program
+     **/
+    public void processNames() {
+	SymTab S = new SymTab();
+	myDeclList.processNames(S, "global");
+	Sym main = S.globalLookup("main");
+	if (main == null) {
+		Errors.fatal(0, 0, "No main function");
 	}
+    }
 
-	public void analyzeNames(){
-		SymTab table = new SymTab();
-		myDeclList.analyzeNames(table);
-	}
+    /** typeCheck **/
+    public void typeCheck() {
+	myDeclList.typeCheck();
+    }
 
-	// 1 kid
-	private DeclListNode myDeclList;
+    public void codeGen(){
+        myDeclList.codeGen();
+    }
+    
+    public void unparse(PrintWriter p, int indent) {
+	myDeclList.unparse(p, indent);
+    }
+
+    // 1 kid
+    private DeclListNode myDeclList;
 }
 
 class DeclListNode extends ASTnode {
-	public DeclListNode(List<DeclNode> L) {
-		myDecls = L;
-	}
+    public DeclListNode(List<DeclNode> L) {
+	myDecls = L;
+    }
 
-	public void analyzeNames(SymTab table){
-		try{
-			for (DeclNode oneDecl : myDecls){
-				oneDecl.analyzeNames(table);
-			}
-		} catch (NoSuchElementException ex) {
-			System.err.println("unexpected NoSuchElementException in DeclListNode.analyzeNames");
-			System.exit(-1);
-		}
+    /** processNames
+     *
+     * given: a symbol table S
+     * do:    process all of the decls in the list
+     **/
+    public void processNames(SymTab S) {
+	Iterator it = myDecls.iterator();
+	try {
+	    while (it.hasNext()) {
+		((DeclNode)it.next()).processNames(S);
+	    }
+	} catch (NoSuchElementException ex) {
+	    System.err.println("unexpected NoSuchElementException in DeclListNode.processNames");
+	    System.exit(-1);
 	}
+	
+    }
+    
+    public void processNames(SymTab S, String status) {
+        Iterator it = myDecls.iterator();
+        try {
+            while (it.hasNext()) {
+                ((DeclNode)it.next()).processNames(S, status);
+            }
+        } catch (NoSuchElementException ex) {
+            System.err.println("unexpected NoSuchElementException in DeclListNode.processNames");
+            System.exit(-1);
+        }
+        
+    }
+    
+    public int processNames(SymTab S, int totalOffset) {
+        Iterator it = myDecls.iterator();
+        try {
+            while (it.hasNext()) {
+                Sym sym = ((DeclNode)it.next()).processNames(S, totalOffset);
+                if (sym.type().equals("int")){
+                    sym.setOffset(4);
+                    sym.setFPOffset(totalOffset);
+                    totalOffset -= 4;
+                    if (!it.hasNext()) {
+                        totalOffset -= 4;
+                    }
+                }    
+                else{
+                    sym.setOffset(8);
+                    sym.setFPOffset(totalOffset);
+                    totalOffset -= 8;
+                    if (!it.hasNext()) {
+                        totalOffset -= 8;
+                    }    
+                }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		try {
-			for (DeclNode oneDecl : myDecls) {
-				oneDecl.unparse(p, indent);
-			}
-		} catch (NoSuchElementException ex) {
-			System.err.println("unexpected NoSuchElementException in DeclListNode.unparse");
-			System.exit(-1);
-		}
+            }
+            return totalOffset;
+        } catch (NoSuchElementException ex) {
+            System.err.println("unexpected NoSuchElementException in DeclListNode.processNames");
+            System.exit(-1);
+        }
+        return 0;
+        
+    }
+
+    /** typeCheck **/
+    public void typeCheck() {
+	Iterator it = myDecls.iterator();
+	try {
+	    while (it.hasNext()) {
+		((DeclNode)it.next()).typeCheck();
+	    }
+	} catch (NoSuchElementException ex) {
+	    System.err.println("unexpected NoSuchElementException in DeclListNode.typeCheck");
+	    System.exit(-1);
 	}
+	
+    }
 
-	// list of kids (DeclNodes)
-	private List<DeclNode> myDecls;
+    public int calcOffset(){
+	Iterator it = myDecls.iterator();
+	int offset = 0;
+	VarDeclNode temp;
+	try {
+	    while (it.hasNext()){
+		temp = (VarDeclNode)it.next();
+		offset += temp.calcOffset();
+            System.out.println(offset);
+	    }
+        return offset;
+	} catch (NoSuchElementException ex) {
+	    System.err.println("unexpected NoSuchElementException in DeclListNode.calcOffset");
+	    System.exit(-1);
+	}
+        return 0;
+    }
+
+    public void codeGen(){
+        Iterator it = myDecls.iterator();
+        try {
+            while (it.hasNext()) {
+                ((DeclNode)it.next()).codeGen();
+            }
+        } catch (NoSuchElementException ex) {
+            System.err.println("unexpected NoSuchElementException in DeclListNode.codeGen");
+            System.exit(-1);
+        }
+    }
+    
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	Iterator it = myDecls.iterator();
+	try {
+	    while (it.hasNext()) {
+		((DeclNode)it.next()).unparse(p, indent);
+	    }
+	} catch (NoSuchElementException ex) {
+	    System.err.println("unexpected NoSuchElementException in DeclListNode.unparse");
+	    System.exit(-1);
+	}
+    }
+
+    // list of kids (DeclNodes)
+    private List<DeclNode> myDecls;
 }
 
 class FormalsListNode extends ASTnode {
-	public FormalsListNode(List<FormalDeclNode> L) {
-		myFormals = L;
-	}
+    public FormalsListNode(List<FormalDeclNode> L) {
+	myFormals = L;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		if (myFormals != null && length() > 0){
-			Iterator it = myFormals.iterator();
-			try {
-				while (it.hasNext()) {
-					((FormalDeclNode)it.next()).unparse(p, indent);
-					if (it.hasNext()) {
-						p.print(", ");
-					}
-				}
-			} catch (NoSuchElementException ex) {
-				System.err.println("unexpected NoSuchElementException in FormalsListNode.unparse");
-				System.exit(-1);
-			}
+    /** processNames
+     *
+     * given: a symbol table S
+     * do:    process all of the formals in the list
+     **/
+    public LinkedList processNames(SymTab S) {
+	LinkedList L = new LinkedList();
+        if (myFormals != null){
+            Iterator it = myFormals.iterator();
+            try {
+                int offset = 0;
+                while (it.hasNext()) {
+                    Sym sym = ((FormalDeclNode)it.next()).processNames(S);
+                    if (sym.type().equals("int")){
+                        sym.setOffset(4);
+                        sym.setFPOffset(offset);
+                        offset -= 4;
+                        if (!it.hasNext()) {
+                            totalOffset = offset;
+                            totalOffset -= 4;
+                        }
+                    }    
+                    else{
+                        sym.setOffset(8);
+                        sym.setFPOffset(offset);
+                        offset -= 8;
+                        if (!it.hasNext()) {
+                            totalOffset = offset;
+                            totalOffset -= 8;
+                        }    
+                    }
+                    if (sym != null) L.add(sym);
+                }
+            } catch (NoSuchElementException ex) {
+                System.err.println("unexpected NoSuchElementException in FormalsListNode.processNames");
+                System.exit(-1);
+            }   
+        }
+        
+	return L;
+    }
+
+    /** length **/
+    public int length() {
+        int count = 0;
+        if (myFormals != null) return myFormals.size();
+        else return count;
+    }
+
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	Iterator it = myFormals.iterator();
+	try {
+	    while (it.hasNext()) {
+		((FormalDeclNode)it.next()).unparse(p, indent);
+		if (it.hasNext()) {
+		    p.print(", ");
 		}
+	    }
+	} catch (NoSuchElementException ex) {
+	    System.err.println("unexpected NoSuchElementException in FormalsListNode.unparse");
+	    System.exit(-1);
 	}
+    }
+    
+    public int getTotalOffset(){
+        return this.totalOffset;
+    }
+    
+    public int calcOffset(){
+            int offset = 0;
+        if (myFormals != null){
+            Iterator it = myFormals.iterator();
+            try {
+                while (it.hasNext()) {
+                offset += ((FormalDeclNode)it.next()).calcOffset();
+                    }
+            } catch (NoSuchElementException ex) {
+                System.err.println("unexpected NoSuchElementException in FormalDeclNode.calcOffset");
+                System.exit(-1);
+            }
+        }
+	return offset;
+    }
 
-	public LinkedList analyzeNames(SymTab table){
-		LinkedList params = new LinkedList();
-		if (myFormals != null){
-			Iterator it = myFormals.iterator();
-			try {
-				while (it.hasNext()){
-					Sym temp = ((FormalDeclNode)it.next()).analyzeNames(table);
-					if (temp != null) params.add(temp);
-				}
-			} catch (NoSuchElementException ex) {
-				System.err.println("unexpected NoSuchElementException in FormalsListNode.analyzeNames");
-				System.exit(-1);
-			}
-		}
-		return params;
-	}
-
-	public int length(){
-		int count = 0;
-		if (myFormals != null){
-			for (FormalDeclNode fdn : myFormals){
-				count++;
-			}
-		}
-		return count;
-	}
-
-	// list of kids (FormalDeclNodes)
-	private List<FormalDeclNode> myFormals;
+    // list of kids (FormalDeclNodes)
+    private List<FormalDeclNode> myFormals;
+    private int totalOffset;
 }
 
 class FnBodyNode extends ASTnode {
-	public FnBodyNode(DeclListNode declList, StmtListNode stmtList) {
-		myDeclList = declList;
-		myStmtList = stmtList;
-	}
+    public FnBodyNode(DeclListNode declList, StmtListNode stmtList) {
+	myDeclList = declList;
+	myStmtList = stmtList;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		if (myDeclList != null) myDeclList.unparse(p, indent+2);
-		if (myStmtList != null) myStmtList.unparse(p, indent+2);
-	}
+    /** processNames **/
+    public void processNames(SymTab S) {
+	myDeclList.processNames(S);
+	myStmtList.processNames(S);
+    }
+    
+    public int processNames(SymTab S, int totalOffset) {
+        totalOffset = myDeclList.processNames(S, totalOffset);
+        myStmtList.processNames(S);
+        return totalOffset;
+    }
 
-	public void analyzeNames(SymTab table) {
-		myDeclList.analyzeNames(table);
-		myStmtList.analyzeNames(table);
-	}
+    /** typeCheck **/
+    public void typeCheck(String returnType) {
+	myStmtList.typeCheck(returnType);
+    }
 
-	// 2 kids
-	private DeclListNode myDeclList;
-	private StmtListNode myStmtList;
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	if (myDeclList != null) myDeclList.unparse(p, indent+2);
+	if (myStmtList != null) myStmtList.unparse(p, indent+2);
+    }
+
+    public int calcOffset(){
+	return myDeclList.calcOffset();
+    }
+    
+    public void codeGen(){
+        /*if (myDeclList != null){
+            myDeclList.codeGen();
+        }*/
+        if (myStmtList != null){
+            myStmtList.codeGen();
+        }
+    }
+
+    // 2 kids
+    private DeclListNode myDeclList;
+    private StmtListNode myStmtList;
 }
 
 class StmtListNode extends ASTnode {
-	public StmtListNode(List<StmtNode> L) {
-		myStmts = L;
-	}
+    public StmtListNode(List<StmtNode> L) {
+	myStmts = L;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		// indent for each stmt is done here
-		// each stmt is expected to end with a newline
-		try {
-			for (StmtNode oneStmt : myStmts) {
-				doIndent(p, indent);
-				oneStmt.unparse(p, indent);
-			}
-		} catch (NoSuchElementException ex) {
-			System.err.println("unexpected NoSuchElementException in StmtListNode.unparse");
-			System.exit(-1);
-		}
+    /** processNames **/
+    public void processNames(SymTab S) {
+	Iterator it = myStmts.iterator();
+	try {
+	    while (it.hasNext()) {
+		((StmtNode)it.next()).processNames(S);
+	    }
+	} catch (NoSuchElementException ex) {
+	    System.err.println("unexpected NoSuchElementException in StmtListNode.processNames");
+	    System.exit(-1);
 	}
+    }
 
-	public void analyzeNames(SymTab table) {
-		try {
-			for (StmtNode oneStmt : myStmts){
-				oneStmt.analyzeNames(table);
-			}
-		} catch (NoSuchElementException ex) {
-			System.err.println("unexpected NoSuchElementException in StmtListNode.analyzeNames");
-			System.exit(-1);
-		}
+    /** typeCheck **/
+    public void typeCheck(String returnType) {
+	Iterator it = myStmts.iterator();
+	try {
+	    while (it.hasNext()) {
+		((StmtNode)it.next()).typeCheck(returnType);
+	    }
+	} catch (NoSuchElementException ex) {
+	    System.err.println("unexpected NoSuchElementException in StmtListNode.processNames");
+	    System.exit(-1);
 	}
+    }
 
-	// list of kids (StmtNodes)
-	private List<StmtNode> myStmts;
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	// indent for each stmt is done here
+	// each stmt is expected to end with a newline
+	Iterator it = myStmts.iterator();
+	try {
+	    while (it.hasNext()) {
+		doIndent(p, indent);
+		((StmtNode)it.next()).unparse(p, indent);
+	    }
+	} catch (NoSuchElementException ex) {
+	    System.err.println("unexpected NoSuchElementException in StmtListNode.unparse");
+	    System.exit(-1);
+	}
+    }
+    
+    public void codeGen() {
+        Iterator it = myStmts.iterator();
+        try {
+            while (it.hasNext()) {
+                ((StmtNode)it.next()).codeGen();
+            }
+        } catch (NoSuchElementException ex) {
+            System.err.println("unexpected NoSuchElementException in StmtListNode.codeGen");
+            System.exit(-1);
+        }
+    }
+
+    // list of kids (StmtNodes)
+    private List<StmtNode> myStmts;
 }
 
 class ExpListNode extends ASTnode {
-	public ExpListNode(List<ExpNode> L) {
-		myExps = L;
-	}
+    public ExpListNode(List<ExpNode> L) {
+	myExps = L;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		Iterator it = myExps.iterator();
-		try {
-			while (it.hasNext()) {
-				((ExpNode)it.next()).unparse(p, 0);
-				if (it.hasNext()) {
-					p.print(", ");
-				}
-			}
-		} catch (NoSuchElementException ex) {
-			System.err.println("unexpected NoSuchElementException in ExpListNode.unparse");
-			System.exit(-1);
+    /** typeCheck **/
+    public void typeCheck(LinkedList<String> L) {
+	int k=0;
+	Iterator it = myExps.iterator();
+	try {
+	    while (it.hasNext()) {
+		ExpNode exp = (ExpNode)it.next();
+		String actualT = exp.typeCheck();
+		if (!isErrType(actualT)) {
+		    String paramT = L.get(k);
+		    if (!compatibleTypes(paramT, actualT)) {
+			Errors.fatal(exp.linenum(), exp.charnum(),
+				     "Type of actual does not match type of formal");
+		    }
 		}
+		k++;
+	    }
+	} catch (NoSuchElementException ex) {
+	    System.err.println("unexpected NoSuchElementException in ExpListNode.processNames");
+	    System.exit(-1);
 	}
+    }
 
-	public void analyzeNames(SymTab table) {
-		try {
-			for (ExpNode exp : myExps){
-				exp.analyzeNames(table);
-			}
-		} catch (NoSuchElementException ex) {
-			System.err.println("unexpected NoSuchElementException in ExpListNode.analyzeNames");
-			System.exit(-1);
+    /** processNames **/
+    public void processNames(SymTab S) {
+	Iterator it = myExps.iterator();
+	try {
+	    while (it.hasNext()) {
+		((ExpNode)it.next()).processNames(S);
+	    }
+	} catch (NoSuchElementException ex) {
+	    System.err.println("unexpected NoSuchElementException in ExpListNode.processNames");
+	    System.exit(-1);
+	}
+    }
+
+    /** length **/
+    public int length() {
+	return myExps.size();
+    }
+
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	Iterator it = myExps.iterator();
+	try {
+	    while (it.hasNext()) {
+		((ExpNode)it.next()).unparse(p, 0);
+		if (it.hasNext()) {
+		    p.print(", ");
 		}
+	    }
+	} catch (NoSuchElementException ex) {
+	    System.err.println("unexpected NoSuchElementException in ExpListNode.unparse");
+	    System.exit(-1);
 	}
+    }
 
-	// list of kids (ExpNodes)
-	private List<ExpNode> myExps;
+    // list of kids (ExpNodes)
+    private List<ExpNode> myExps;
 }
 
 // **********************************************************************
 // DeclNode and its subclasses
 // **********************************************************************
 abstract class DeclNode extends ASTnode {
-
-	abstract public Sym analyzeNames(SymTab table);
-
+    // note: only a formal decl needs to return a Sym
+    //       but since we must declare the method here,
+    //       we make all decl nodes return something
+    //       (for non formal decls, the returned value
+    //       is simply ignored)
+    abstract public Sym processNames(SymTab S);
+    abstract public Sym processNames(SymTab S, String status);
+    abstract public Sym processNames(SymTab S, int totalOffset);
+    // default version of typeCheck for var and formal decls
+    public void typeCheck() {
+    }
+    abstract public void codeGen();
 }
 
 class VarDeclNode extends DeclNode {
-	public VarDeclNode(TypeNode type, IdNode id) {
-		myType = type;
-		myId = id;
-	}
+    public VarDeclNode(TypeNode type, IdNode id) {
+	myType = type;
+	myId = id;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		doIndent(p, indent);
-		myType.unparse(p, 0);
-		p.print(" ");
-		myId.unparseDecl(p, 0);
-		p.println(";");
+    /** processNames
+     *
+     * given: a symbol table
+     * do: if this name is declared void, error!
+     *     if this name has already been declared in this scope, error!
+     *     if no error, add name to local symbol table
+     **/
+    public Sym processNames(SymTab S) {
+	String name = myId.name();
+	boolean badDecl = false;
+	if (isVoidType(myType.type())) {
+	    Errors.fatal(myId.linenum(), myId.charnum(),
+			 "Non-function declared void");
+	    badDecl = true;
 	}
-
-	public Sym analyzeNames(SymTab table) {
-		boolean problems = false;
-		String id = myId.getName();
-		String type = myType.getType();
-		Sym temp = null;
-		if (type.equals("void")){
-			Errors.fatal(myId.getLineNum(), myId.getCharNum(), "Non-function declared void");
-			problems = true;
-		}
-		if (table.localLookup(id) != null){
-			Errors.fatal(myId.getLineNum(), myId.getCharNum(), "Mulitply declared identifier");
-			problems = true;
-		}
-		if (!problems){
-			try{
-				temp = new Sym(type, id);
-				table.insert(id, temp);
-				myId.setSym(temp);
-			} catch (DuplicateException ex) {
-				System.err.println("unexpected DuplicateException in VarDeclNode.analyzeNames");
-				System.exit(-1);
-			} catch (EmptySymTabException ex) {
-				System.err.println("unexpected EmptySymTabException in VarDeclNode.analyzeNames");
-				System.exit(-1);
-			}
-		}
-		return temp;
+	if (S.localLookup(name) != null) {
+	    Errors.fatal(myId.linenum(), myId.charnum(),
+			 "Multiply declared identifier");
+	    badDecl = true;
 	}
+	if (! badDecl) {
+	    try {
+            Sym sym = new Sym(myType.type());
+            sym.setOffset(0);                   // locals have 0 for offset
+            S.insert(name, sym);
+            myId.link(sym);
+	    } catch (DuplicateException ex) {
+		System.err.println("unexpected DuplicateException in VarDeclNode.processNames");
+		System.exit(-1);
+	    } catch (EmptySymTabException ex) {
+		System.err.println("unexpected EmptySymTabException in VarDeclNode.processNames");
+		System.exit(-1);
+	    }
+	}
+	return null;  // return value ignored
+    }
+    
+    public Sym processNames(SymTab S, String status) {
+        String name = myId.name();
+        boolean badDecl = false;
+        if (isVoidType(myType.type())) {
+            Errors.fatal(myId.linenum(), myId.charnum(),
+                         "Non-function declared void");
+            badDecl = true;
+        }
+        if (S.localLookup(name) != null) {
+            Errors.fatal(myId.linenum(), myId.charnum(),
+                         "Multiply declared identifier");
+            badDecl = true;
+        }
+        if (! badDecl) {
+            try {
+                Sym sym = new Sym(myType.type());
+                S.insert(name, sym);
+                myId.link(sym);
+            } catch (DuplicateException ex) {
+                System.err.println("unexpected DuplicateException in VarDeclNode.processNames");
+                System.exit(-1);
+            } catch (EmptySymTabException ex) {
+                System.err.println("unexpected EmptySymTabException in VarDeclNode.processNames");
+                System.exit(-1);
+            }
+        }
+        return null;  // return value ignored
+    }
+    
+    public Sym processNames(SymTab S, int totalOffset) {
+        String name = myId.name();
+        boolean badDecl = false;
+        if (isVoidType(myType.type())) {
+            Errors.fatal(myId.linenum(), myId.charnum(),
+                         "Non-function declared void");
+            badDecl = true;
+        }
+        if (S.localLookup(name) != null) {
+            Errors.fatal(myId.linenum(), myId.charnum(),
+                         "Multiply declared identifier");
+            badDecl = true;
+        }
+        if (! badDecl) {
+            try {
+                Sym sym = new Sym(myType.type());
+                S.insert(name, sym);
+                myId.link(sym);
+                return sym;
+            } catch (DuplicateException ex) {
+                System.err.println("unexpected DuplicateException in VarDeclNode.processNames");
+                System.exit(-1);
+            } catch (EmptySymTabException ex) {
+                System.err.println("unexpected EmptySymTabException in VarDeclNode.processNames");
+                System.exit(-1);
+            }
+        }
+        return null;  // return value ignored
+    }
 
-	// 2 kids
-	private TypeNode myType;
-	private IdNode myId;
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	doIndent(p, indent);
+	myType.unparse(p, 0);
+	p.print(" ");
+	myId.unparse(p, 0);
+	p.println(";");
+    }
+
+    public int calcOffset(){
+        return myId.calcOffset();
+    }
+    
+    public void codeGen() {
+        if (myId.calcOffset() > 0){
+            Codegen.generate(".data");
+            Codegen.generate(".align 2");
+            Codegen.generateLabeled("_"+myId.name(), ".space "+myId.calcOffset(), "GLOBAL", "");
+        }
+    }
+
+    // 2 kids
+    private TypeNode myType;
+    private IdNode myId;
 }
 
 class FnDeclNode extends DeclNode {
-	public FnDeclNode(TypeNode type,
-			IdNode id,
-			FormalsListNode formalList,
-			FnBodyNode body) {
-		myType = type;
-		myId = id;
-		myFormalsList = formalList;
-		myBody = body;
-	}
+    public FnDeclNode(TypeNode type,
+		      IdNode id,
+		      FormalsListNode formalList,
+		      FnBodyNode body) {
+	myType = type;
+	myId = id;
+	myFormalsList = formalList;
+	myBody = body;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.println();
-		doIndent(p, indent);
-		myType.unparse(p, 0);
-		p.print(" ");
-		myId.unparseDecl(p, 0);
-		p.print("(");
-		if (myFormalsList != null) myFormalsList.unparse(p, 0);
-		p.println(") {");
-		if (myBody != null) myBody.unparse(p, indent);
-		doIndent(p, indent);
-		p.println("}");
-		p.println();
+    /** processNames
+     *
+     * given: a symbol table S
+     * do:    If this name has already been declared in this scope
+     *        then error
+     *        else add name to local symbol table.
+     *        In any case:
+     *             enter new scope
+     *             process formals
+     *             if this fn not multiply decld
+     *                update symtab entry with types of formals
+     *             process body
+     *             exit scope
+     **/
+    public Sym processNames(SymTab S) {
+	String name = myId.name();
+	FnSym sym = null;
+	if (S.localLookup(name) != null) {
+	    Errors.fatal(myId.linenum(), myId.charnum(),
+			 "Multiply declared identifier");
 	}
-
-	public Sym analyzeNames(SymTab table){
-		String id = myId.getName();
-		FunctionSym temp = null;
-		if (table.localLookup(id) != null) {
-			Errors.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
-		}
-		else {
-			try {
-				temp = new FunctionSym(myType.getType(), id, myFormalsList.length());
-				table.insert(id, temp);
-				myId.setSym(temp);
-			} catch (DuplicateException ex) {
-				System.err.println("unexpected DuplicateException in FnDeclNode.analyzeNames");
-				System.exit(-1);
-			} catch (EmptySymTabException ex) {
-				System.err.println("unexpected EmptySymTabException in FnDeclNode.analyzeNames");
-				System.exit(-1);
-			}
-		}
-		table.addMap();
-		LinkedList params = myFormalsList.analyzeNames(table);
-		if (temp != null) temp.addParams(params);
-		myBody.analyzeNames(table);
-		try {
-			table.removeMap();
-		} catch (EmptySymTabException ex) {
-			System.err.println("unexpected EmptySumTabException in FnDeclNode.analyzeNames");
-			System.exit(-1);
-		}
-		return temp;
+	else {
+	    try {
+        sym = new FnSym(myType.type(), myFormalsList.length());
+		S.insert(name, sym);
+		myId.link(sym);
+	    } catch (DuplicateException ex) {
+		System.err.println("unexpected DuplicateException in FnDeclNode.processNames");
+		System.exit(-1);
+	    } catch (EmptySymTabException ex) {
+		System.err.println("unexpected EmptySymTabException in FnDeclNode.processNames");
+		System.exit(-1);
+	    }
 	}
+        S.addMap();
+        LinkedList L = myFormalsList.processNames(S);
+        int totalOffset = myFormalsList.getTotalOffset();
+        FormalDeclNode temp;
+        int offset;
+        if (sym != null) sym.addFormals(L);
+        totalOffset = myBody.processNames(S, totalOffset);
+        offset = calcOffset();
+        sym.setOffset(offset);
+        try {
+            S.removeMap();
+        } catch (EmptySymTabException ex) {
+            System.err.println("unexpected EmptySymTabException in FnDeclNode.processNames");
+            System.exit(-1);
+            }
+        return null;
+    }
 
-	// 4 kids
-	private TypeNode myType;
-	private IdNode myId;
-	private FormalsListNode myFormalsList;
-	private FnBodyNode myBody;
+    public Sym processNames(SymTab S, String status) {
+        String name = myId.name();
+        FnSym sym = null;
+        if (S.localLookup(name) != null) {
+            Errors.fatal(myId.linenum(), myId.charnum(),
+                         "Multiply declared identifier");
+        }
+        else {
+            try {
+                sym = new FnSym(myType.type(), myFormalsList.length());
+                S.insert(name, sym);
+                myId.link(sym);
+            } catch (DuplicateException ex) {
+                System.err.println("unexpected DuplicateException in FnDeclNode.processNames");
+                System.exit(-1);
+            } catch (EmptySymTabException ex) {
+                System.err.println("unexpected EmptySymTabException in FnDeclNode.processNames");
+                System.exit(-1);
+            }
+        }
+        S.addMap();
+        LinkedList L = myFormalsList.processNames(S);
+        Iterator it = L.iterator();
+        FormalDeclNode temp;
+        int offset;
+        if (sym != null) sym.addFormals(L);
+        myBody.processNames(S);
+        offset = calcOffset();
+        sym.setOffset(offset);
+        try {
+            S.removeMap();
+        } catch (EmptySymTabException ex) {
+            System.err.println("unexpected EmptySymTabException in FnDeclNode.processNames");
+            System.exit(-1);
+	    }
+        return null;
+    }
+    
+    public Sym processNames(SymTab S, int totalOffset) {
+        return null;
+    }
+    
+    /** typeCheck **/
+    public void typeCheck() {
+	myBody.typeCheck(myType.type());
+    }
+
+    public int calcOffset(){
+        int offset = myFormalsList.calcOffset();
+        paramOffset = offset;
+        localsOffset = myBody.calcOffset();
+        offset += localsOffset;
+        return offset;
+    }
+
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.println();
+	doIndent(p, indent);
+	myType.unparse(p, 0);
+	p.print(" ");
+	myId.unparse(p, 0);
+	p.print("(");
+	if (myFormalsList != null) myFormalsList.unparse(p, 0);
+	p.println(") {");
+	if (myBody != null) myBody.unparse(p, indent);
+	doIndent(p, indent);
+	p.println("}");
+    }
+
+    public void codeGen() {
+        Codegen.generate(".text");
+        if (myId.name().equals("main")) {
+            Codegen.generate(".globl main");
+            Codegen.generateLabeled("main", "", "FUNCTION ENTRY", "");
+        } else {
+            Codegen.genLabel("_" + myId.name());
+        }
+        Codegen.genPush(Codegen.RA, 4);
+        Codegen.genPush(Codegen.FP, 4);
+        Codegen.generate("addu", Codegen.FP, Codegen.SP, paramOffset + 8);
+        if (localsOffset > 0){
+            Codegen.generate("subu", Codegen.SP, Codegen.SP, localsOffset);
+            System.out.println("locals " + localsOffset);
+        }
+        String prologue = Codegen.nextLabel();
+        myBody.codeGen();
+        Codegen.generateLabeled(prologue, "", "FUNCTION EXIT", "");
+        Codegen.generateIndexed("lw", Codegen.RA, Codegen.FP, -(paramOffset), "load return address");
+        Codegen.generateWithComment("move", "save control link", Codegen.T0, Codegen.FP);
+        Codegen.generateIndexed("lw", Codegen.FP, Codegen.FP, -(paramOffset + 4), "restore FP");
+        Codegen.generateWithComment("move", "restore SP", Codegen.SP, Codegen.T0);
+        Codegen.generateWithComment("jr", "return", Codegen.RA);
+    }
+
+    
+    // 4 kids
+    private TypeNode myType;
+    private IdNode myId;
+    private FormalsListNode myFormalsList;
+    private FnBodyNode myBody;
+    private int paramOffset;
+    private int localsOffset;   
 }
 
 class FormalDeclNode extends DeclNode {
-	public FormalDeclNode(TypeNode type, IdNode id) {
-		myType = type;
-		myId = id;
-	}
+    public FormalDeclNode(TypeNode type, IdNode id) {
+	myType = type;
+	myId = id;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		doIndent(p, indent);
-		myType.unparse(p, indent);
-		p.print(" ");
-		myId.unparseDecl(p, indent);
+    /** processNames
+     *
+     * given: a symbol table S
+     * do:    if this formal is declared void, error!
+     *        else if this formal is multiply declared
+     *        then give an error msg and return null
+     *        else add a new entry to S and also return that Sym
+     **/
+    public Sym processNames(SymTab S) {
+	String name = myId.name();
+	boolean badDecl = false;
+	Sym sym = null;
+	if (isVoidType(myType.type())) {
+	    Errors.fatal(myId.linenum(), myId.charnum(),
+			 "Non-function declared void");
+	    badDecl = true;
 	}
+	if (S.localLookup(name) != null) {
+	    Errors.fatal(myId.linenum(), myId.charnum(),
+			 "Multiply declared identifier");
+	    badDecl = true;
+	}
+	if (! badDecl) {
+	    try {
+		sym = new Sym(myType.type());
+		S.insert(name, sym);
+		myId.link(sym);
+	    } catch (DuplicateException ex) {
+		System.err.println("unexpected DuplicateException in FormalDeclNode.processNames");
+		System.exit(-1);
+	    } catch (EmptySymTabException ex) {
+		System.err.println("unexpected EmptySymTabException in FormalDeclNode.processNames");
+		System.exit(-1);
+	    }
+	}
+	return sym;
+    }
 
-	public Sym analyzeNames(SymTab table) {
-		boolean problems = false;
-		String id = myId.getName();
-		String type = myType.getType();
-		Sym temp = null;
-		if (type.equals("void")){
-			Errors.fatal(myId.getLineNum(), myId.getCharNum(), "Non-function declared void");
-			problems = true;
-		}
-		if (table.localLookup(id) != null) {
-			Errors.fatal(myId.getLineNum(), myId.getCharNum(), "Multiply declared identifier");
-			problems = true;
-		}
-		if (!problems) {
-			try {
-				temp = new Sym(type, id);
-				table.insert(id, temp);
-				myId.setSym(temp);
-			} catch (DuplicateException e){
-				System.err.println("unexpected DuplicateException in FormalDeclNode.analyzeNames");
-				System.exit(-1);
-			} catch (EmptySymTabException e) {
-				System.err.println("unexpected EmptySymTabException in FormalDeclNode.analyzeNames");
-				System.exit(-1);
-			}
-		}
-		return temp;
-	}
-	
-	public String getType(){
-		return myType.getType();
-	}
+    public Sym processNames(SymTab S, String status) {
+        return null;
+    }
+    
+    public Sym processNames(SymTab S, int totalOffset) {
+        return null;
+    }
+    
+    
+    public int calcOffset(){
+    	return myId.calcOffset();
+    }
 
-	// 2 kids
-	private TypeNode myType;
-	private IdNode myId;
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	doIndent(p, indent);
+	myType.unparse(p, indent);
+	p.print(" ");
+	myId.unparse(p, indent);
+    }
+    
+    public void codeGen(){}
+
+    // 2 kids
+    private TypeNode myType;
+    private IdNode myId;
 }
 
 // **********************************************************************
 // TypeNode and its Subclasses
 // **********************************************************************
 abstract class TypeNode extends ASTnode {
-	abstract public String getType();
+    /* all subclasses must provide a type method */
+    abstract public String type();
 }
 
 class IntNode extends TypeNode {
-	public IntNode() {
-	}
+    public IntNode() {
+    }
 
-	public String getType(){
-		return "int";
-	}
+    /** type **/
+    public String type() {
+	return INT_TYPE;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("int");
-	}
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print(INT_TYPE);
+    }
 }
 
 class DblNode extends TypeNode {
-	public DblNode() {
-	}
+    public DblNode() {
+    }
 
-	public String getType(){
-		return "double";
-	}
+    /** type **/
+    public String type() {
+	return DBL_TYPE;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("double");
-	}
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print(DBL_TYPE);
+    }
 }
 
 class VoidNode extends TypeNode {
-	public VoidNode() {
-	}
+    public VoidNode() {
+    }
 
-	public String getType(){
-		return "void";
-	}
+    public String type() {
+	return VOID_TYPE;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("void");
-	}
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print(VOID_TYPE);
+    }
 }
-
 
 // **********************************************************************
 // StmtNode and its subclasses
 // **********************************************************************
 
 abstract class StmtNode extends ASTnode {
-	abstract public void analyzeNames(SymTab table);
+    abstract public void processNames(SymTab S);
+    abstract public void typeCheck(String T);
+    public void codeGen(){}
 }
 
 class AssignStmtNode extends StmtNode {
-	public AssignStmtNode(AssignNode e) {
-		myExp = e;
-	}
+    public AssignStmtNode(AssignNode e) {
+	myExp = e;
+    }
 
-	public void unparse(PrintWriter p, int indent) {
-		myExp.unparseNoParens(p,0);
-		p.println(";");
-	}
+    /** processNames **/
+    public void processNames(SymTab S) {
+	myExp.processNames(S);
+    }
 
-	public void analyzeNames(SymTab table){
-		myExp.analyzeNames(table);
-	}
+    /** typeCheck **/
+    public void typeCheck(String retType) {
+	myExp.typeCheck();
+    }
 
-	// 1 kid
-	private AssignNode myExp;
+    public void unparse(PrintWriter p, int indent) {
+	myExp.unparse(p,0,false);
+	p.println(";");
+    }
+
+    public void codeGen(){
+        myExp.codeGen();
+        int varSize = myExp.sizeOfVar();
+        Codegen.genPop(Codegen.T0, varSize);
+    }
+    
+    // 1 kid
+    private AssignNode myExp;
 }
 
 class PreIncStmtNode extends StmtNode {
-	public PreIncStmtNode(IdNode id) {
-		myId = id;
-	}
+    public PreIncStmtNode(IdNode id) {
+	myId = id;
+    }
 
-	public void unparse(PrintWriter p, int indent) {
-		p.print("++");
-		myId.unparse(p,0);
-		p.println(";");
-	}
+    /** processNames **/
+    public void processNames(SymTab S) {
+	myId.processNames(S);
+    }
 
-	public void analyzeNames(SymTab table) {
-		myId.analyzeNames(table);
+    /** typeCheck **/
+    public void typeCheck(String retType) {
+	String T = myId.typeCheck();
+	if (!isErrType(T)) {
+	    if (!isIntType(T)) {
+		Errors.fatal(myId.linenum(), myId.charnum(),
+			     "Non-int identifier used with ++ or --");
+	    }
 	}
+    }
 
-	// 1 kid
-	private IdNode myId;
+    /** unparse **/
+    public void unparse(PrintWriter p, int indent) {
+	p.print("++");
+	myId.unparse(p,0);
+	p.println(";");
+    }
+
+    // 1 kid
+    private IdNode myId;
 }
 
 class PreDecStmtNode extends StmtNode {
-	public PreDecStmtNode(IdNode id) {
-		myId = id;
-	}
+    public PreDecStmtNode(IdNode id) {
+	myId = id;
+    }
 
-	public void unparse(PrintWriter p, int indent) {
-		p.print("--");
-		myId.unparse(p,0);
-		p.println(";");
-	}
+    /** processNames **/
+    public void processNames(SymTab S) {
+	myId.processNames(S);
+    }
 
-	public void analyzeNames(SymTab table) {
-		myId.analyzeNames(table);
+    /** typeCheck **/
+    public void typeCheck(String retType) {
+	String T = myId.typeCheck();
+	if (!isErrType(T)) {
+	    if (!isIntType(T)) {
+		Errors.fatal(myId.linenum(), myId.charnum(),
+			     "Non-int identifier used with ++ or --");
+	    }
 	}
+    }
 
-	// 1 kid
-	private IdNode myId;
+    /** unparse **/
+    public void unparse(PrintWriter p, int indent) {
+	p.print("--");
+	myId.unparse(p,0);
+	p.println(";");
+    }
+
+    // 1 kid
+    private IdNode myId;
 }
 
 class PostIncStmtNode extends StmtNode {
-	public PostIncStmtNode(IdNode id) {
-		myId = id;
-	}
+    public PostIncStmtNode(IdNode id) {
+	myId = id;
+    }
 
-	public void unparse(PrintWriter p, int indent) {
-		myId.unparse(p,0);
-		p.println("++;");
-	}
+    /** processNames **/
+    public void processNames(SymTab S) {
+	myId.processNames(S);
+    }
 
-	public void analyzeNames(SymTab table) {
-		myId.analyzeNames(table);
+    /** typeCheck **/
+    public void typeCheck(String retType) {
+	String T = myId.typeCheck();
+	if (!isErrType(T)) {
+	    if (!isIntType(T)) {
+		Errors.fatal(myId.linenum(), myId.charnum(),
+			     "Non-int identifier used with ++ or --");
+	    }
 	}
+    }
 
-	// 1 kid
-	private IdNode myId;
+    /** unparse **/
+    public void unparse(PrintWriter p, int indent) {
+	myId.unparse(p,0);
+	p.println("++;");
+    }
+
+    // 1 kid
+    private IdNode myId;
 }
 
 class PostDecStmtNode extends StmtNode {
-	public PostDecStmtNode(IdNode id) {
-		myId = id;
-	}
+    public PostDecStmtNode(IdNode id) {
+	myId = id;
+    }
 
-	public void unparse(PrintWriter p, int indent) {
-		myId.unparse(p,0);
-		p.println("--;");
-	}
+    /** processNames **/
+    public void processNames(SymTab S) {
+	myId.processNames(S);
+    }
 
-	public void analyzeNames(SymTab table) {
-		myId.analyzeNames(table);
+    /** typeCheck **/
+    public void typeCheck(String retType) {
+	String T = myId.typeCheck();
+	if (!isErrType(T)) {
+	    if (!isIntType(T)) {
+		Errors.fatal(myId.linenum(), myId.charnum(),
+			     "Non-int identifier used with ++ or --");
+	    }
 	}
+    }
 
-	// 1 kid
-	private IdNode myId;
+    /** unparse **/
+    public void unparse(PrintWriter p, int indent) {
+	myId.unparse(p,0);
+	p.println("--;");
+    }
+
+    // 1 kid
+    private IdNode myId;
 }
 
 class ReadIntStmtNode extends StmtNode {
-	public ReadIntStmtNode(IdNode id) {
-		myId = id;
-	}
+    public ReadIntStmtNode(IdNode id) {
+	myId = id;
+    }
 
-	public void unparse(PrintWriter p, int indent) {
-		p.print("scanf(\"%d\", &");
-		myId.unparse(p,0);
-		p.println(");");
-	}
+    /** processNames **/
+    public void processNames(SymTab S) {
+	myId.processNames(S);
+    }
 
-	public void analyzeNames(SymTab table) {
-		myId.analyzeNames(table);
+    /** typeCheck **/
+    public void typeCheck(String retType) {
+	String T = myId.typeCheck();
+	if (!isIntType(T)) {
+	    Errors.fatal(myId.linenum(), myId.charnum(),
+			 "Attempt to read a non-int id with an int format");
 	}
+    }
 
-	// 1 kid
-	private IdNode myId;
+    /** unparse **/
+    public void unparse(PrintWriter p, int indent) {
+	p.print("scanf(\"%d\", &");
+	myId.unparse(p,0);
+	p.println(");");
+    }
+
+    // 1 kid
+    private IdNode myId;
 }
 
 class ReadDblStmtNode extends StmtNode {
-	public ReadDblStmtNode(IdNode id) {
-		myId = id;
-	}
+    public ReadDblStmtNode(IdNode id) {
+	myId = id;
+    }
 
-	public void unparse(PrintWriter p, int indent) {
-		p.print("scanf(\"%f\", &");
-		myId.unparse(p,0);
-		p.println(");");
-	}
+    /** processNames **/
+    public void processNames(SymTab S) {
+	myId.processNames(S);
+    }
 
-	public void analyzeNames(SymTab table) {
-		myId.analyzeNames(table);
+    /** typeCheck **/
+    public void typeCheck(String retType) {
+	String T = myId.typeCheck();
+	if (!isDblType(T)) {
+	    Errors.fatal(myId.linenum(), myId.charnum(),
+			 "Attempt to read a non-double id with a dbl format");
 	}
+    }
 
-	// 1 kid
-	private IdNode myId;
+    /** unparse **/
+    public void unparse(PrintWriter p, int indent) {
+	p.print("scanf(\"%f\", &");
+	myId.unparse(p,0);
+	p.println(");");
+    }
+
+    // 1 kid
+    private IdNode myId;
 }
 
 class WriteIntStmtNode extends StmtNode {
-	public WriteIntStmtNode(ExpNode exp) {
-		myExp = exp;
-	}
+    public WriteIntStmtNode(ExpNode exp) {
+	myExp = exp;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("printf(\"%d\", ");
-		myExp.unparse(p,0);
-		p.println(");");
-	}
+    /** processNames **/
+    public void processNames(SymTab S) {
+	myExp.processNames(S);
+    }
 
-	public void analyzeNames(SymTab table) {
-		myExp.analyzeNames(table);
+    /** typeCheck **/
+    public void typeCheck(String retType) {
+	String T = myExp.typeCheck();
+	if (!isIntType(T) && !isErrType(T)) {
+	    Errors.fatal(myExp.linenum(), myExp.charnum(),
+			 "Attempt to write a non-int value with an int format");
 	}
+    }
 
-	// 1 kid
-	private ExpNode myExp;
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("printf(\"%d\", ");
+	myExp.unparse(p,0);
+	p.println(");");
+    }
+
+    public void codeGen(){
+        myExp.codeGen();
+        Codegen.genPop(Codegen.A0, 4);
+        Codegen.generate("li", Codegen.V0, 1);
+        Codegen.generate("syscall");
+    }
+    
+    // 1 kid
+    private ExpNode myExp;
 }
 
 class WriteDblStmtNode extends StmtNode {
-	public WriteDblStmtNode(ExpNode exp) {
-		myExp = exp;
-	}
+    public WriteDblStmtNode(ExpNode exp) {
+	myExp = exp;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("printf(\"%f\", ");
-		myExp.unparse(p,0);
-		p.println(");");
-	}
+    /** processNames **/
+    public void processNames(SymTab S) {
+	myExp.processNames(S);
+    }
 
-	public void analyzeNames(SymTab table) {
-		myExp.analyzeNames(table);
+    /** typeCheck **/
+    public void typeCheck(String retType) {
+	String T = myExp.typeCheck();
+	if (!isDblType(T) && !isErrType(T)) {
+	    Errors.fatal(myExp.linenum(), myExp.charnum(),
+			 "Attempt to write a non-double value with a dbl format");
 	}
+    }
 
-	// 1 kid
-	private ExpNode myExp;
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("printf(\"%d\", ");
+	myExp.unparse(p,0);
+	p.println(");");
+    }
+    
+    public void codeGen(){
+        myExp.codeGen();
+        Codegen.genPop(Codegen.F12, 8);
+        Codegen.generate("li", Codegen.V0, 3);
+        Codegen.generate("syscall");
+    }
+
+    // 1 kid
+    private ExpNode myExp;
 }
 
 class WriteStrStmtNode extends StmtNode {
-	public WriteStrStmtNode(ExpNode exp) {
-		myExp = exp;
-	}
+    public WriteStrStmtNode(ExpNode exp) {
+	myExp = exp;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("printf(");
-		myExp.unparse(p,0);
-		p.println(");");
-	}
+    /** processNames **/
+    public void processNames(SymTab S) {
+	/* only a stringliteral is possible, so no need to check */
+    }
 
-	public void analyzeNames(SymTab table) {
-		myExp.analyzeNames(table);
-	}
+    /** typeCheck **/
+    public void typeCheck(String retType) {
+	/* only a stringliteral is possible, so no need to typecheck */
+    }
 
-	// 1 kid
-	private ExpNode myExp;
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("printf(");
+	myExp.unparse(p,0);
+	p.println(");");
+    }
+
+    public void codeGen(){
+        Codegen.generateWithComment("", "WRITE STR");
+        myExp.codeGen();
+        Codegen.genPop(Codegen.A0, 4);
+        Codegen.generate("li", Codegen.V0, 4);
+        Codegen.generate("syscall");
+    }
+    
+    // 1 kid
+    private ExpNode myExp;
 }
 
 class IfStmtNode extends StmtNode {
-	public IfStmtNode(ExpNode exp, DeclListNode dlist, StmtListNode slist) {
-		myDeclList = dlist;
-		myExp = exp;
-		myStmtList = slist;
-	}
+    public IfStmtNode(ExpNode exp, DeclListNode dlist, StmtListNode slist) {
+	myDeclList = dlist;
+	myExp = exp;
+	myStmtList = slist;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("if (");
-		myExp.unparse(p,0);
-		p.println(") {");
-		if (myDeclList != null) myDeclList.unparse(p,indent+2);
-		if (myStmtList != null) myStmtList.unparse(p,indent+2);
-		doIndent(p, indent);
-		p.println("}");
+    /** typeCheck **/
+    public void typeCheck(String retType) {
+	String T = myExp.typeCheck();
+	if (! isIntType(T) && ! isErrType(T)) {
+	    Errors.fatal(myExp.linenum(), myExp.charnum(),
+			 "Non-int expression used as an if condition");
 	}
+	myStmtList.typeCheck(retType);
+    }
 
-	public void analyzeNames(SymTab table) {
-		myExp.analyzeNames(table);
-		table.addMap();
-		myDeclList.analyzeNames(table);
-		myStmtList.analyzeNames(table);
-		try {
-			table.removeMap();
-		} catch (EmptySymTabException e) {
-			System.err.println("unexpected EmptySymTabException in IfStmtNode.analyzeNames");
-			System.exit(-1);
-		}
-	}
+    /** processNames
+     *  
+     *  process the condition, then enter scope; process decls & stmts;
+     *  exit scope
+     *
+     **/
+    public void processNames(SymTab S) {
+	myExp.processNames(S);
+	S.addMap();
+	myDeclList.processNames(S);
+	myStmtList.processNames(S);
+	try {
+	    S.removeMap();
+	} catch (EmptySymTabException ex) {
+		System.err.println("unexpected EmptySymTabException in IfStmtNode.processNames");
+		System.exit(-1);
+	    }
+    }
 
-	// 3 kids
-	private ExpNode myExp;
-	private DeclListNode myDeclList;
-	private StmtListNode myStmtList;
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("if (");
+	myExp.unparse(p,0);
+	p.println(") {");
+	if (myDeclList != null) myDeclList.unparse(p,indent+2);
+	if (myStmtList != null) myStmtList.unparse(p,indent+2);
+	doIndent(p, indent);
+	p.println("}");
+    }
+
+    public void codeGen(){
+        
+    }
+    
+    // 3 kids
+    private ExpNode myExp;
+    private DeclListNode myDeclList;
+    private StmtListNode myStmtList;
 }
 
 class IfElseStmtNode extends StmtNode {
-	public IfElseStmtNode(ExpNode exp, DeclListNode dlist1,
-			StmtListNode slist1, DeclListNode dlist2,
-			StmtListNode slist2) {
-		myExp = exp;
-		myThenDeclList = dlist1;
-		myThenStmtList = slist1;
-		myElseDeclList = dlist2;
-		myElseStmtList = slist2;
-	}
+    public IfElseStmtNode(ExpNode exp, DeclListNode dlist1,
+			  StmtListNode slist1, DeclListNode dlist2,
+			  StmtListNode slist2) {
+	myExp = exp;
+	myThenDeclList = dlist1;
+	myThenStmtList = slist1;
+	myElseDeclList = dlist2;
+	myElseStmtList = slist2;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("if (");
-		myExp.unparse(p,0);
-		p.println(") {");
-		if (myThenDeclList != null) myThenDeclList.unparse(p,indent+2);
-		if (myThenStmtList != null) myThenStmtList.unparse(p,indent+2);
-		doIndent(p, indent);
-		p.println("}");
-		doIndent(p, indent);
-		p.println("else {");
-		if (myElseDeclList != null) myElseDeclList.unparse(p,indent+2);
-		if (myElseStmtList != null) myElseStmtList.unparse(p,indent+2);
-		doIndent(p, indent);
-		p.println("}");
+    /** typeCheck **/
+    public void typeCheck(String retType) {
+	String T = myExp.typeCheck();
+	if (! isIntType(T) && ! isErrType(T)) {
+	    Errors.fatal(myExp.linenum(), myExp.charnum(),
+			 "Non-int expression used as an if condition");
 	}
+	myThenStmtList.typeCheck(retType);
+	myElseStmtList.typeCheck(retType);
+    }
 
-	public void analyzeNames(SymTab table) {
-		myExp.analyzeNames(table);
-		table.addMap();
-		myThenDeclList.analyzeNames(table);
-		myThenStmtList.analyzeNames(table);
-		try {
-			table.removeMap();
-		} catch (EmptySymTabException e) {
-			System.err.println("unexpected EmptySymTabException in IfElseStmtNode.analyzeNames");
-			System.exit(-1);
-		}
-		table.addMap();
-		myElseDeclList.analyzeNames(table);
-		myElseStmtList.analyzeNames(table);
-		try {
-		    table.removeMap();
-		} catch (EmptySymTabException e) {
-			System.err.println("unexpected EmptySymTabException in IfElseStmtNode.analyzeNames");
-			System.exit(-1);
-		    }
-	}
+    /** processNames
+     *  
+     *  process the condition, then enter scope; process decls & stmts
+     *  in "then" part; then exit scope; enter scope; process decls &
+     *  stmts in "else" part; exit scope
+     *
+     **/
+    public void processNames(SymTab S) {
+	myExp.processNames(S);
+	S.addMap();
+	myThenDeclList.processNames(S);
+	myThenStmtList.processNames(S);
+	try {
+	    S.removeMap();
+	} catch (EmptySymTabException ex) {
+		System.err.println("unexpected EmptySymTabException in IfElseStmtNode.processNames");
+		System.exit(-1);
+	    }
+	S.addMap();
+	myElseDeclList.processNames(S);
+	myElseStmtList.processNames(S);
+	try {
+	    S.removeMap();
+	} catch (EmptySymTabException ex) {
+		System.err.println("unexpected EmptySymTabException in IfElseStmtNode.processNames");
+		System.exit(-1);
+	    }
+    }
 
-	// 5 kids
-	private ExpNode myExp;
-	private DeclListNode myThenDeclList;
-	private StmtListNode myThenStmtList;
-	private StmtListNode myElseStmtList;
-	private DeclListNode myElseDeclList;
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("if (");
+	myExp.unparse(p,0);
+	p.println(") {");
+	if (myThenDeclList != null) myThenDeclList.unparse(p,indent+2);
+	if (myThenStmtList != null) myThenStmtList.unparse(p,indent+2);
+	doIndent(p, indent);
+	p.println("}");
+	doIndent(p, indent);
+	p.println("else {");
+	if (myElseDeclList != null) myElseDeclList.unparse(p,indent+2);
+	if (myElseStmtList != null) myElseStmtList.unparse(p,indent+2);
+	doIndent(p, indent);
+	p.println("}");
+    }
+
+    public void codeGen(){
+        
+    }
+    
+    // 5 kids
+    private ExpNode myExp;
+    private DeclListNode myThenDeclList;
+    private StmtListNode myThenStmtList;
+    private StmtListNode myElseStmtList;
+    private DeclListNode myElseDeclList;
 }
 
 class WhileStmtNode extends StmtNode {
-	public WhileStmtNode(ExpNode exp, DeclListNode dlist, StmtListNode slist) {
-		myExp = exp;
-		myDeclList = dlist;
-		myStmtList = slist;
-	}
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("while (");
-		myExp.unparse(p,0);
-		p.println(") {");
-		if (myDeclList != null) myDeclList.unparse(p,indent+2);
-		if (myStmtList != null) myStmtList.unparse(p,indent+2);
-		doIndent(p, indent);
-		p.println("}");
-	}
+    public WhileStmtNode(ExpNode exp, DeclListNode dlist, StmtListNode slist) {
+	myExp = exp;
+	myDeclList = dlist;
+	myStmtList = slist;
+    }
 
-	public void analyzeNames(SymTab table) {
-		myExp.analyzeNames(table);
-		table.addMap();
-		myDeclList.analyzeNames(table);
-		myStmtList.analyzeNames(table);
-		try {
-			table.removeMap();
-		} catch (EmptySymTabException e) {
-			System.err.println("unexpected EmptySymTabException in WhileStmtNode.analyzeNames");
-			System.exit(-1);
-		}
+    /** typeCheck **/
+    public void typeCheck(String retType) {
+	String T = myExp.typeCheck();
+	if (! isIntType(T) && ! isErrType(T)) {
+	    Errors.fatal(myExp.linenum(), myExp.charnum(),
+			 "Non-int expression used as a while condition");
 	}
+	myStmtList.typeCheck(retType);
+    }
 
-	// 3 kids
-	private ExpNode myExp;
-	private DeclListNode myDeclList;
-	private StmtListNode myStmtList;
+    /** processNames
+     *  
+     *  process the condition, then enter scope; process decls & stmts;
+     *  exit scope
+     *
+     **/
+    public void processNames(SymTab S) {
+	myExp.processNames(S);
+	S.addMap();
+	myDeclList.processNames(S);
+	myStmtList.processNames(S);
+	try {
+	    S.removeMap();
+	} catch (EmptySymTabException ex) {
+		System.err.println("unexpected EmptySymTabException in WhileStmtNode.processNames");
+		System.exit(-1);
+	    }
+    }
+
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("while (");
+	myExp.unparse(p,0);
+	p.println(") {");
+	if (myDeclList != null) myDeclList.unparse(p,indent+2);
+	if (myStmtList != null) myStmtList.unparse(p,indent+2);
+	doIndent(p, indent);
+	p.println("}");
+    }
+
+    public void codeGen(){
+        
+    }
+    
+    // 3 kids
+    private ExpNode myExp;
+    private DeclListNode myDeclList;
+    private StmtListNode myStmtList;
 }
 
 class CallStmtNode extends StmtNode {
-	public CallStmtNode(CallExpNode call) {
-		myCall = call;
-	}
+    public CallStmtNode(CallExpNode call) {
+	myCall = call;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		myCall.unparse(p,indent);
-		p.println(";");
-	}
+    /** typeCheck **/
+    public void typeCheck(String retType) {
+	myCall.typeCheck();
+    }
 
-	public void analyzeNames(SymTab table) {
-		myCall.analyzeNames(table);
-	}
+    /** processNames **/
+    public void processNames(SymTab S) {
+	myCall.processNames(S);
+    }
 
-	// 1 kid
-	private CallExpNode myCall;
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	myCall.unparse(p,indent);
+	p.println(";");
+    }
+
+    public void codeGen(){
+        
+    }
+    
+    // 1 kid
+    private CallExpNode myCall;
 }
 
 class ReturnStmtNode extends StmtNode {
-	public ReturnStmtNode(ExpNode exp) {
-		myExp = exp;
-	}
+    public ReturnStmtNode(ExpNode exp) {
+	myExp = exp;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("return");
-		if (myExp != null) {
-			p.print(" ");
-			myExp.unparse(p,0);
-		}
-		p.println(";");
+    /** typeCheck **/
+    public void typeCheck(String retType) {
+	if (myExp != null) {
+	    // return with a value
+	    // error if
+	    // (a) fn return type is void, or
+	    // (b) value type is non-numeric, or
+	    // (c) value type is dbl and return type is int
+	    String T = myExp.typeCheck();
+	    if (isVoidType(retType)) {
+		Errors.fatal(myExp.linenum(), myExp.charnum(),
+			     "Return with a value in a void function");
+		return;
+	    }
+	    if (isErrType(T)) return;
+	    if (! isNumericType(T) || (isDblType(T) && isIntType(retType))) {
+		Errors.fatal(myExp.linenum(), myExp.charnum(),
+			     "Bad return value");
+	    }
 	}
-
-	public void analyzeNames(SymTab table) {
-		if (myExp != null) {
-			myExp.analyzeNames(table);
-		}
+	else {
+	    // return w/o value
+	    // error if fn return type is NOT void
+	    if (! isVoidType(retType)) {
+		Errors.fatal(0, 0, "Missing return value");
+	    }
 	}
+    }
 
-	// 1 kid
-	private ExpNode myExp;
+    /** processNames **/
+    public void processNames(SymTab S) {
+	if (myExp != null) myExp.processNames(S);
+    }
+
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("return");
+	if (myExp != null) {
+	    p.print(" ");
+	    myExp.unparse(p,0);
+	}
+	p.println(";");
+    }
+
+    public void codeGen(){
+        
+    }
+    
+    // 1 kid
+    private ExpNode myExp;
 }
 
 // **********************************************************************
@@ -923,238 +1656,383 @@ class ReturnStmtNode extends StmtNode {
 // **********************************************************************
 
 abstract class ExpNode extends ASTnode {
-	public void analyzeNames(SymTab table){};
+    // default version of processNames (for nodes with no names)
+    public void processNames(SymTab S) {}
+    abstract public void codeGen();
+    abstract public String typeCheck();
+    abstract public int linenum();
+    abstract public int charnum();
+    
+    public int sizeOfVar(){
+        if (typeCheck().equals("double")) return 8;
+        else return 4;
+    }
 }
 
 class IntLitNode extends ExpNode {
-	public IntLitNode(int lineNum, int charNum, int intVal) {
-		myLineNum = lineNum;
-		myCharNum = charNum;
-		myIntVal = intVal;
-	}
+    public IntLitNode(int lineNum, int charNum, int intVal) {
+	myLineNum = lineNum;
+	myCharNum = charNum;
+	myIntVal = intVal;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print(myIntVal);
-	}
+    /** typeCheck **/
+    public String typeCheck() {
+	return INT_TYPE;
+    }
 
-	private int myLineNum;
-	private int myCharNum;
-	private int myIntVal;
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print(myIntVal);
+    }
+
+    /** linenum **/
+    public int linenum() {
+	return myLineNum;
+    }
+
+    /** charnum **/
+    public int charnum() {
+	return myCharNum;
+    }
+
+    public void codeGen(){
+        String s = "" + myIntVal;
+        Codegen.generate("li", Codegen.T0, s);
+        Codegen.genPush(Codegen.T0, 4);
+    }
+    
+    private int myLineNum;
+    private int myCharNum;
+    private int myIntVal;
 }
 
 class DblLitNode extends ExpNode {
-	public DblLitNode(int lineNum, int charNum, double dblVal) {
-		myLineNum = lineNum;
-		myCharNum = charNum;
-		myDblVal = dblVal;
-	}
+    public DblLitNode(int lineNum, int charNum, double dblVal) {
+	myLineNum = lineNum;
+	myCharNum = charNum;
+	myDblVal = dblVal;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print(myDblVal);
-	}
+    /** typeCheck **/
+    public String typeCheck() {
+	return DBL_TYPE;
+    }
 
-	private int myLineNum;
-	private int myCharNum;
-	private double myDblVal;
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print(myDblVal);
+    }
+
+    /** linenum **/
+    public int linenum() {
+	return myLineNum;
+    }
+
+    /** charnum **/
+    public int charnum() {
+	return myCharNum;
+    }
+    
+    public void codeGen(){
+        String s = "" + myDblVal;
+        Codegen.generate("li.d", Codegen.F0, s);
+        Codegen.genPush(Codegen.F0, 8);
+    }
+
+    private int myLineNum;
+    private int myCharNum;
+    private double myDblVal;
 }
 
 class StringLitNode extends ExpNode {
-	public StringLitNode(int lineNum, int charNum, String strVal) {
-		myLineNum = lineNum;
-		myCharNum = charNum;
-		myStrVal = strVal;
-	}
+    public StringLitNode(int lineNum, int charNum, String strVal) {
+	myLineNum = lineNum;
+	myCharNum = charNum;
+	myStrVal = strVal;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print(myStrVal);
-	}
+    /** typeCheck **/
+    public String typeCheck() {
+	return "string";
+    }
 
-	private int myLineNum;
-	private int myCharNum;
-	private String myStrVal;
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print(myStrVal);
+    }
+
+    /** linenum **/
+    public int linenum() {
+	return myLineNum;
+    }
+
+    /** charnum **/
+    public int charnum() {
+	return myCharNum;
+    }
+
+    public void codeGen(){
+        Codegen.generate(".data");
+        String label = Codegen.nextLabel();
+        Codegen.generateLabeled(label, ".asciiz", "", myStrVal);
+        Codegen.generate(".text");
+        Codegen.generate("la", Codegen.T0, label);
+        Codegen.genPush(Codegen.T0, 4);
+    }
+    
+    private int myLineNum;
+    private int myCharNum;
+    private String myStrVal;
 }
 
 class IdNode extends ExpNode {
-	public IdNode(int lineNum, int charNum, String strVal) {
-		myLineNum = lineNum;
-		myCharNum = charNum;
-		myStrVal = strVal;
-	}
+    public IdNode(int lineNum, int charNum, String strVal) {
+	myLineNum = lineNum;
+	myCharNum = charNum;
+	myStrVal = strVal;
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print(myStrVal);
-		if (sym != null) {
-			p.print("(" + sym.getType() + ")");
-		}
+    /** typeCheck **/
+    public String typeCheck() {
+	if (mySym != null) return mySym.type();
+	else {
+	    System.err.println("ID with null sym field in IdNode.typeCheck");
+	    System.exit(-1);
 	}
+	return null;
+    }
 
-	public void unparseDecl(PrintWriter p, int indent) {
-		p.print(myStrVal);
+    /** processNames
+     *
+     * check for use of an undeclared name
+     * if OK, link to symtab entry
+     *
+     **/
+    public void processNames(SymTab S) {
+	Sym sym = S.globalLookup(myStrVal);
+	if (sym  == null) {
+	    Errors.fatal(myLineNum, myCharNum,
+			 "Undeclared identifier");
+	} else {
+	    link(sym);
 	}
-	
-	public void unparseFxn(PrintWriter p, int indent) {
-		LinkedList params = ((FunctionSym)sym).getParams();
-		if (((FunctionSym)sym).getParamAmount() > 0 && params != null){
-			p.print(myStrVal + "(");
-			Iterator it = params.iterator();
-			try {
-				while (it.hasNext()) {
-					p.print(((FunctionSym)it.next()).getType());
-					if (it.hasNext()) {
-						p.print(", ");
-					}
-				}
-			} catch (NoSuchElementException ex) {
-				System.err.println("unexpected NoSuchElementException in FormalsListNode.unparse");
-				System.exit(-1);
-			}
-			p.print(" -> " + sym.getType() + ")");
-		}
-		else{
-		p.print(myStrVal + "(->" + sym.getType() + ")");
-		}
-		
+    }
+
+    /** link **/
+    public void link(Sym sym) {
+	mySym = sym;
+    }
+
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print(myStrVal);
+	p.print("(" + mySym.type() + ")");
+    }
+
+    /** name **/
+    public String name() {
+	return myStrVal;
+    }
+
+    /** type **/
+    public String type() {
+	if (mySym != null) return mySym.type();
+	else {
+	    System.err.println("ID with null sym field");
+	    System.exit(-1);
 	}
-	
-	public void unparseFxn2(PrintWriter p, int indent) {
-		p.print(" -> " + sym.getType() + ")");
-	}
+	return null;
+    }
 
-	public String getName(){
-		return myStrVal;
-	}
+    /** symbol-table entry */
+    public Sym sym() {
+	return mySym;
+    }
 
-	public void setSym(Sym sym) {
-		this.sym = sym;
-	}
+    /** line num **/
+    public int linenum() {
+	return myLineNum;
+    }
 
-	public String getType(){
-		if (sym != null){
-			return sym.getType();
-		}
-		return null;
-	}
+    /** char num **/
+    public int charnum() {
+	return myCharNum;
+    }
 
-	public Sym getSym(){
-		return sym;
-	}
+    public int calcOffset(){
+	return mySym.getOffset();
+    }
 
-	public void analyzeNames(SymTab table) {
-		Sym temp = table.globalLookup(myStrVal);
-		if (temp == null){
-			Errors.fatal(myLineNum, myCharNum, "Undeclared identifier");
-		}
-		else setSym(temp);
-	}
+    public void codeGen(){
+        if (mySym.type().equals("int")){
+            if (mySym.getOffset() > 0){
+                Codegen.generate("lw", Codegen.T0, "_" + myStrVal);
+            }
+            else{
+                Codegen.generateIndexed("lw", Codegen.T0, Codegen.FP, mySym.getFPOffset());
+            }
+        }
+        else{
+            if (mySym.getOffset() > 0){
+                Codegen.generate("l.d", Codegen.F0, "_" + myStrVal);
+            }
+            else{
+                Codegen.generateIndexed("l.d", Codegen.F0, Codegen.FP, -1 * mySym.getFPOffset());
+            }
+        }
+    }
+    
+    public void genJumpAndLink(){
+        if (myStrVal.equals("main")) Codegen.generate("jal", "main");
+        else Codegen.generate("jal", "_" + myStrVal);
+    }
+    
+    public void genAddr(){
+        if (mySym.getOffset() > 0){
+            Codegen.generate("la", Codegen.T0, "_" + myStrVal);
+        }
+        else{
+            Codegen.generateIndexed("la", Codegen.T0, Codegen.FP, -1 * mySym.getOffset());
+        }
+    }
 
-	public int getLineNum(){
-		return myLineNum;
-	} 
-
-
-	public int getCharNum(){
-		return myCharNum;
-	}
-
-	// fields
-	private int myLineNum;
-	private int myCharNum;
-	private String myStrVal;
-	private Sym sym;
+    
+    // fields
+    private int myLineNum;
+    private int myCharNum;
+    private String myStrVal;
+    private Sym mySym;
 }
 
-class AssignNode extends ExpNode {
-	public AssignNode(IdNode lhs, ExpNode exp) {
-		myLhs = lhs;
-		myExp = exp;
-	}
-
-	// ** unparse **
-	//
-	// Two versions: One called from the unparse method of
-	// AssignStmtNode -- do NOT enclose this assignment in parens;
-	// The other called whenever this assignment really is an
-	// expression, not a stmt, so DO enclose this assignment in
-	// parens.
-
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(");
-		myLhs.unparse(p, 0);
-		p.print(" = ");
-		myExp.unparse(p,0);
-		p.print(")");
-	}
-
-	public void analyzeNames(SymTab table){
-		myLhs.analyzeNames(table);
-		myExp.analyzeNames(table);
-	}
-
-	public void unparseNoParens(PrintWriter p, int indent) {
-		myLhs.unparse(p, 0);
-		p.print(" = ");
-		myExp.unparse(p,0);
-	}
-
-	// 2 kids
-	private IdNode myLhs;
-	private ExpNode myExp;
-}
 class CallExpNode extends ExpNode {
-	public CallExpNode(IdNode name, ExpListNode elist) {
-		myId = name;
-		myExpList = elist;
+    public CallExpNode(IdNode name, ExpListNode elist) {
+	myId = name;
+	myExpList = elist;
+    }
+
+    /** typeCheck **/
+    public String typeCheck() {
+	String T = myId.typeCheck();
+	// check that ID is a fn
+	if (! isFnType(T)) {
+	    Errors.fatal(myId.linenum(), myId.charnum(),
+			 "Attempt to call a non-function");
+	    return ERR_TYPE;
 	}
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		myId.unparseFxn(p,0);
-		p.print("(");
-		if (myExpList != null) myExpList.unparse(p,0);
-		p.print(")");
+	// check number of args
+	FnSym s = (FnSym)myId.sym();
+	if (s == null) {
+	    System.out.println("null sym for ID in CallExpNode.typeCheck");
+	    System.exit(-1);
 	}
 
-	public void analyzeNames(SymTab table) {
-		myId.analyzeNames(table);
-		myExpList.analyzeNames(table);
+	int numParams = s.numparams();
+	if (numParams != myExpList.length()) {
+	    Errors.fatal(myId.linenum(), myId.charnum(),
+			 "Function call with wrong number of args");
+	    return s.returnType();
 	}
 
-	// 2 kids
-	private IdNode myId;
-	private ExpListNode myExpList;
+	// check type of each arg
+	myExpList.typeCheck(s.paramTypes());
+	return s.returnType();
+    }
+
+    /** processNames 
+     *
+     * process name of called fn and all actuals
+     **/
+    public void processNames(SymTab S) {
+	myId.processNames(S);
+	myExpList.processNames(S);
+    }
+
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	myId.unparse(p,0);
+	p.print("(");
+	if (myExpList != null) myExpList.unparse(p,0);
+	p.print(")");
+    }
+
+    /** linenum **/
+    public int linenum() {
+	return myId.linenum();
+    }
+
+    /** charnum **/
+    public int charnum() {
+	return myId.charnum();
+    }
+
+    public void codeGen(){
+        
+    }
+    
+    // 2 kids
+    private IdNode myId;
+    private ExpListNode myExpList;
 }
 
 abstract class UnaryExpNode extends ExpNode {
-	public UnaryExpNode(ExpNode exp) {
-		myExp = exp;
-	}
+    public UnaryExpNode(ExpNode exp) {
+	myExp = exp;
+    }
 
-	public void analyzeNames(SymTab table) {
-		myExp.analyzeNames(table);
-	}
+    /** processNames **/
+    public void processNames(SymTab S) {
+	myExp.processNames(S);
+    }
 
-	// one kid
-	protected ExpNode myExp;
+    /** linenum **/
+    public int linenum() {
+	return myExp.linenum();
+    }
+
+    /** charnum **/
+    public int charnum() {
+	return myExp.charnum();
+    }
+
+    public void codeGen(){
+        
+    }
+    
+    // one kid
+    protected ExpNode myExp;
 }
 
 abstract class BinaryExpNode extends ExpNode {
-	public BinaryExpNode(ExpNode exp1, ExpNode exp2) {
-		myExp1 = exp1;
-		myExp2 = exp2;
-	}
+    public BinaryExpNode(ExpNode exp1, ExpNode exp2) {
+	myExp1 = exp1;
+	myExp2 = exp2;
+    }
 
-	public void analyzeNames(SymTab table) {
-		myExp1.analyzeNames(table);
-		myExp2.analyzeNames(table);
-	}
+    /** processNames **/
+    public void processNames(SymTab S) {
+	myExp1.processNames(S);
+	myExp2.processNames(S);
+    }
 
-	// two kids
-	protected ExpNode myExp1;
-	protected ExpNode myExp2;
+    /** linenum **/
+    public int linenum() {
+	return myExp1.linenum();
+    }
+
+    /** charnum **/
+    public int charnum() {
+	return myExp1.charnum();
+    }
+    
+    public void codeGen(){
+        
+    }
+
+    // two kids
+    protected ExpNode myExp1;
+    protected ExpNode myExp2;
 }
 
 // **********************************************************************
@@ -1162,238 +2040,520 @@ abstract class BinaryExpNode extends ExpNode {
 // **********************************************************************
 
 class PlusPlusNode extends UnaryExpNode {
-	public PlusPlusNode(IdNode id) {
-		super(id);
-	}
+    public PlusPlusNode(IdNode id) {
+	super(id);
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(");
-		myExp.unparse(p, 0);
-		p.print("++)");
-	}
+    /** typeCheck **/
+    public String typeCheck() {
+	String T = myExp.typeCheck();
+	if (! isErrType(T)) {
+	    if (! isIntType(T)) {
+		Errors.fatal(myExp.linenum(), myExp.charnum(),
+			     "Non-int identifier used with ++ or --");
+		return ERR_TYPE;
+	    }
+	    return INT_TYPE;
+	} else return T;
+    }
+
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(");
+	myExp.unparse(p, 0);
+	p.print("++");
+	p.print(")");
+    }
+    
+    public void codeGen(){
+        
+    }
 }
 
 class MinusMinusNode extends UnaryExpNode {
-	public MinusMinusNode(IdNode id) {
-		super(id);
-	}
+    public MinusMinusNode(IdNode id) {
+	super(id);
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(");
-		myExp.unparse(p, 0);
-		p.print("--)");
-	}
+    /** typeCheck **/
+    public String typeCheck() {
+	String T = myExp.typeCheck();
+	if (! isErrType(T)) {
+	    if (! isIntType(T)) {
+		Errors.fatal(myExp.linenum(), myExp.charnum(),
+			     "Non-int identifier used with ++ or --");
+		return ERR_TYPE;
+	    }
+	    return INT_TYPE;
+	} else return T;
+    }
+
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(");
+	myExp.unparse(p, 0);
+	p.print("--");
+	p.print(")");
+    }
+    
+    public void codeGen(){
+        
+    }
 }
 
 class UnaryMinusNode extends UnaryExpNode {
-	public UnaryMinusNode(ExpNode exp) {
-		super(exp);
-	}
+    public UnaryMinusNode(ExpNode exp) {
+	super(exp);
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(-");
-		myExp.unparse(p, 0);
-		p.print(")");
+    /** typeCheck **/
+    public String typeCheck() {
+	String T = myExp.typeCheck();
+	if (! isNumericType(T) && ! isErrType(T)) {
+	    Errors.fatal(myExp.linenum(), myExp.charnum(),
+			 "Illegal use of non-numeric operand");
+	    return ERR_TYPE;
 	}
+	return T;
+    }
+
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(-");
+	myExp.unparse(p, 0);
+	p.print(")");
+    }
+    
+    public void codeGen(){
+        
+    }
 }
 
 class NotNode extends UnaryExpNode {
-	public NotNode(ExpNode exp) {
-		super(exp);
-	}
+    public NotNode(ExpNode exp) {
+	super(exp);
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(!");
-		myExp.unparse(p, 0);
-		p.print(")");
+    /** typeCheck **/
+    public String typeCheck() {
+	String T = myExp.typeCheck();
+	if (! isIntType(T) && ! isErrType(T)) {
+	    Errors.fatal(myExp.linenum(), myExp.charnum(),
+			 "Logical operator applied to non-int operand");
+	    return ERR_TYPE;
 	}
+	return T;
+    }
+
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(!");
+	myExp.unparse(p, 0);
+	p.print(")");
+    }
+    
+    public void codeGen(){
+        
+    }
 }
 
 // **********************************************************************
 // Subclasses of BinaryExpNode
 // **********************************************************************
 
-class PlusNode extends BinaryExpNode {
-	public PlusNode(ExpNode exp1, ExpNode exp2) {
-		super(exp1, exp2);
-	}
+class AssignNode extends BinaryExpNode {
+    private static final boolean DEBUG = false;
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(");
-		myExp1.unparse(p, 0);
-		p.print("+");
-		myExp2.unparse(p, 0);
-		p.print(")");
+    public AssignNode(ExpNode lhs, ExpNode exp) {
+	super(lhs, exp);
+    }
+
+    /** typeCheck **/
+    public String typeCheck() {
+	String retType;
+	String T1 = myExp1.typeCheck();
+	String T2 = retType = myExp2.typeCheck();
+	if (! isNumericType(T1) && ! isErrType(T1)) {
+	    Errors.fatal(myExp1.linenum(), myExp1.charnum(),
+			 "Illegal use of non-numeric operand");
+	    T1 = ERR_TYPE;
 	}
+	if (! isNumericType(T2) && ! isErrType(T2)) {
+	    Errors.fatal(myExp2.linenum(), myExp2.charnum(),
+			 "Illegal use of non-numeric operand");
+	    return ERR_TYPE;
+	}
+	if (isErrType(T1) || isErrType(T2)) return ERR_TYPE;
+	if (isIntType(T1) && isDblType(T2)) {
+	    Errors.fatal(myExp2.linenum(), myExp2.charnum(),
+			 "Possible loss of precision");
+	    return ERR_TYPE;
+	}
+	return T1;
+    }
+
+    // ** unparse **
+    //
+    // Two versions: One called from the unparse method of
+    // AssignStmtNode -- do NOT enclose this assignment in parens;
+    // The other called whenever this assignment really is an
+    // expression, not a stmt, so DO enclose this assignment in
+    // parens.
+    
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(");
+	myExp1.unparse(p, 0);
+	p.print(" = ");
+	myExp2.unparse(p,0);
+	p.print(")");
+    }
+
+    /** processNames **/
+    public void processNames(SymTab S) {
+	myExp1.processNames(S);
+	myExp2.processNames(S);
+    }
+
+    public void unparse(PrintWriter p, int indent, boolean b) {
+	myExp1.unparse(p, 0);
+	p.print(" = ");
+	myExp2.unparse(p,0);
+    }
+    
+    public void codeGen(){
+        myExp2.codeGen();
+        int varSize = myExp2.sizeOfVar();
+        Codegen.genPop(Codegen.T0, varSize);
+        Codegen.genPush(Codegen.T0, varSize);
+        
+    }
 }
 
-class MinusNode extends BinaryExpNode {
-	public MinusNode(ExpNode exp1, ExpNode exp2) {
-		super(exp1, exp2);
-	}
+abstract class ArithmeticBinExpNode extends BinaryExpNode {
+    public ArithmeticBinExpNode(ExpNode exp1, ExpNode exp2) {
+	super(exp1, exp2);
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(");
-		myExp1.unparse(p, 0);
-		p.print("-");
-		myExp2.unparse(p, 0);
-		p.print(")");
+    /** typeCheck **/
+    public String typeCheck() {
+	String T1 = myExp1.typeCheck();
+	String T2 = myExp2.typeCheck();
+	if (! isNumericType(T1) && ! isErrType(T1)) {
+	    Errors.fatal(myExp1.linenum(), myExp1.charnum(),
+			 "Illegal use of non-numeric operand");
 	}
+	if (! isNumericType(T2) && ! isErrType(T2)) {
+	    Errors.fatal(myExp2.linenum(), myExp2.charnum(),
+			 "Illegal use of non-numeric operand");
+	    return ERR_TYPE;
+	}
+	if (isErrType(T1) || isErrType(T2)) return ERR_TYPE;
+	else {
+	    if (isDblType(T1) || isDblType(T2)) return DBL_TYPE;
+	    else return INT_TYPE;
+	}
+    }
+    
+    public void codeGen(){
+        
+    }
 }
 
-class TimesNode extends BinaryExpNode {
-	public TimesNode(ExpNode exp1, ExpNode exp2) {
-		super(exp1, exp2);
-	}
+abstract class EqualityBinExpNode extends BinaryExpNode {
+    public EqualityBinExpNode(ExpNode exp1, ExpNode exp2) {
+	super(exp1, exp2);
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(");
-		myExp1.unparse(p, 0);
-		p.print("*");
-		myExp2.unparse(p, 0);
-		p.print(")");
+    /** typeCheck **/
+    public String typeCheck() {
+	String T1 = myExp1.typeCheck();
+	String T2 = myExp2.typeCheck();
+	if (! isNumericType(T1) && ! isErrType(T1)) {
+	    Errors.fatal(myExp1.linenum(), myExp1.charnum(),
+			 "Illegal use of non-numeric operand");
+	    T1 = ERR_TYPE;
 	}
+	if (! isNumericType(T2) && ! isErrType(T2)) {
+	    Errors.fatal(myExp2.linenum(), myExp2.charnum(),
+			 "Illegal use of non-numeric operand");
+	    return ERR_TYPE;
+	}
+	if (isErrType(T1) || isErrType(T2)) return ERR_TYPE;
+	else return INT_TYPE;
+    }
+    
+    public void codeGen(){
+        
+    }
 }
 
-class DivideNode extends BinaryExpNode {
-	public DivideNode(ExpNode exp1, ExpNode exp2) {
-		super(exp1, exp2);
-	}
+abstract class LogicalBinExpNode extends BinaryExpNode {
+    public LogicalBinExpNode(ExpNode exp1, ExpNode exp2) {
+	super(exp1, exp2);
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(");
-		myExp1.unparse(p, 0);
-		p.print("/");
-		myExp2.unparse(p, 0);
-		p.print(")");
+    /** typeCheck **/
+    public String typeCheck() {
+	String T1 = myExp1.typeCheck();
+	String T2 = myExp2.typeCheck();
+	String retType = INT_TYPE;
+	if (! isIntType(T1) && ! isErrType(T1)) {
+	    Errors.fatal(myExp1.linenum(), myExp1.charnum(),
+			 "Logical operator applied to non-int operand");
+	    retType = ERR_TYPE;
 	}
+	if (! isIntType(T2) && ! isErrType(T2)) {
+	    Errors.fatal(myExp2.linenum(), myExp2.charnum(),
+			 "Logical operator applied to non-int operand");
+	    retType = ERR_TYPE;
+	}
+	if (isErrType(T1) || isErrType(T2)) return ERR_TYPE;
+	else return retType;
+    }
+    
+    public void codeGen(){
+        
+    }
 }
 
-class AndNode extends BinaryExpNode {
-	public AndNode(ExpNode exp1, ExpNode exp2) {
-		super(exp1, exp2);
-	}
+// **********************************************************************
+// Subclasses of ArithmeticBinExpNode
+// **********************************************************************
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(");
-		myExp1.unparse(p, 0);
-		p.print("&&");
-		myExp2.unparse(p, 0);
-		p.print(")");
-	}
+class PlusNode extends ArithmeticBinExpNode {
+    public PlusNode(ExpNode exp1, ExpNode exp2) {
+	super(exp1, exp2);
+    }
+
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(");
+	myExp1.unparse(p, 0);
+	p.print("+");
+	myExp2.unparse(p, 0);
+	p.print(")");
+    }
+    
+    public void codeGen(){
+        
+    }
 }
 
-class OrNode extends BinaryExpNode {
-	public OrNode(ExpNode exp1, ExpNode exp2) {
-		super(exp1, exp2);
-	}
+class MinusNode extends ArithmeticBinExpNode {
+    public MinusNode(ExpNode exp1, ExpNode exp2) {
+	super(exp1, exp2);
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(");
-		myExp1.unparse(p, 0);
-		p.print("||");
-		myExp2.unparse(p, 0);
-		p.print(")");
-	}
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(");
+	myExp1.unparse(p, 0);
+	p.print("-");
+	myExp2.unparse(p, 0);
+	p.print(")");
+    }
+    
+    public void codeGen(){
+        
+    }
 }
 
-class EqualsNode extends BinaryExpNode {
-	public EqualsNode(ExpNode exp1, ExpNode exp2) {
-		super(exp1, exp2);
-	}
+class TimesNode extends ArithmeticBinExpNode {
+    public TimesNode(ExpNode exp1, ExpNode exp2) {
+	super(exp1, exp2);
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(");
-		myExp1.unparse(p, 0);
-		p.print("==");
-		myExp2.unparse(p, 0);
-		p.print(")");
-	}
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(");
+	myExp1.unparse(p, 0);
+	p.print("*");
+	myExp2.unparse(p, 0);
+	p.print(")");
+    }
+    
+    public void codeGen(){
+        
+    }
 }
 
-class NotEqualsNode extends BinaryExpNode {
-	public NotEqualsNode(ExpNode exp1, ExpNode exp2) {
-		super(exp1, exp2);
-	}
+class DivideNode extends ArithmeticBinExpNode {
+    public DivideNode(ExpNode exp1, ExpNode exp2) {
+	super(exp1, exp2);
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(");
-		myExp1.unparse(p, 0);
-		p.print("!=");
-		myExp2.unparse(p, 0);
-		p.print(")");
-	}
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(");
+	myExp1.unparse(p, 0);
+	p.print("/");
+	myExp2.unparse(p, 0);
+	p.print(")");
+    }
+    
+    public void codeGen(){
+        
+    }
 }
 
-class LessNode extends BinaryExpNode {
-	public LessNode(ExpNode exp1, ExpNode exp2) {
-		super(exp1, exp2);
-	}
+class EqualsNode extends EqualityBinExpNode {
+    public EqualsNode(ExpNode exp1, ExpNode exp2) {
+	super(exp1, exp2);
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(");
-		myExp1.unparse(p, 0);
-		p.print("<");
-		myExp2.unparse(p, 0);
-		p.print(")");
-	}
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(");
+	myExp1.unparse(p, 0);
+	p.print("==");
+	myExp2.unparse(p, 0);
+	p.print(")");
+    }
+    
+    public void codeGen(){
+        
+    }
 }
 
-class GreaterNode extends BinaryExpNode {
-	public GreaterNode(ExpNode exp1, ExpNode exp2) {
-		super(exp1, exp2);
-	}
+class NotEqualsNode extends EqualityBinExpNode {
+    public NotEqualsNode(ExpNode exp1, ExpNode exp2) {
+	super(exp1, exp2);
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(");
-		myExp1.unparse(p, 0);
-		p.print(">");
-		myExp2.unparse(p, 0);
-		p.print(")");
-	}
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(");
+	myExp1.unparse(p, 0);
+	p.print("!=");
+	myExp2.unparse(p, 0);
+	p.print(")");
+    }
+    
+    public void codeGen(){
+        
+    }
 }
 
-class LessEqNode extends BinaryExpNode {
-	public LessEqNode(ExpNode exp1, ExpNode exp2) {
-		super(exp1, exp2);
-	}
+class LessNode extends EqualityBinExpNode {
+    public LessNode(ExpNode exp1, ExpNode exp2) {
+	super(exp1, exp2);
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(");
-		myExp1.unparse(p, 0);
-		p.print("<=");
-		myExp2.unparse(p, 0);
-		p.print(")");
-	}
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(");
+	myExp1.unparse(p, 0);
+	p.print("<");
+	myExp2.unparse(p, 0);
+	p.print(")");
+    }
+    
+    public void codeGen(){
+        
+    }
 }
 
-class GreaterEqNode extends BinaryExpNode {
-	public GreaterEqNode(ExpNode exp1, ExpNode exp2) {
-		super(exp1, exp2);
-	}
+class GreaterNode extends EqualityBinExpNode {
+    public GreaterNode(ExpNode exp1, ExpNode exp2) {
+	super(exp1, exp2);
+    }
 
-	// ** unparse **
-	public void unparse(PrintWriter p, int indent) {
-		p.print("(");
-		myExp1.unparse(p, 0);
-		p.print(">=");
-		myExp2.unparse(p, 0);
-		p.print(")");
-	}
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(");
+	myExp1.unparse(p, 0);
+	p.print(">");
+	myExp2.unparse(p, 0);
+	p.print(")");
+    }
+    
+    public void codeGen(){
+        
+    }
 }
+
+class LessEqNode extends EqualityBinExpNode {
+    public LessEqNode(ExpNode exp1, ExpNode exp2) {
+	super(exp1, exp2);
+    }
+
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(");
+	myExp1.unparse(p, 0);
+	p.print("<=");
+	myExp2.unparse(p, 0);
+	p.print(")");
+    }
+    
+    public void codeGen(){
+        
+    }
+}
+
+class GreaterEqNode extends EqualityBinExpNode {
+    public GreaterEqNode(ExpNode exp1, ExpNode exp2) {
+	super(exp1, exp2);
+    }
+
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(");
+	myExp1.unparse(p, 0);
+	p.print(">=");
+	myExp2.unparse(p, 0);
+	p.print(")");
+    }
+    
+    public void codeGen(){
+        
+    }
+}
+
+
+// **********************************************************************
+// Subclasses of LogicalBinExpNode
+// **********************************************************************
+
+class AndNode extends LogicalBinExpNode {
+    public AndNode(ExpNode exp1, ExpNode exp2) {
+	super(exp1, exp2);
+    }
+
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(");
+	myExp1.unparse(p, 0);
+	p.print("&&");
+	myExp2.unparse(p, 0);
+	p.print(")");
+    }
+    
+    public void codeGen(){
+        
+    }
+}
+
+class OrNode extends LogicalBinExpNode {
+    public OrNode(ExpNode exp1, ExpNode exp2) {
+	super(exp1, exp2);
+    }
+
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	p.print("(");
+	myExp1.unparse(p, 0);
+	p.print("||");
+	myExp2.unparse(p, 0);
+	p.print(")");
+    }
+    
+    public void codeGen(){
+        
+    }
+}
+
+
+
+
 
