@@ -1,13 +1,12 @@
-void test(int a, int b){
-   printf("%d", a);
-   printf("%d", b);
-   return;
+int test(int a, int b){
+   a = 8;
+   return a;
 }
 void main() {
    int x;
    int y;
    x = 3;
    y = 5;
-   test(x + y, y - x);
+   x = test(x, y - x);
    printf("%d", x);
 }

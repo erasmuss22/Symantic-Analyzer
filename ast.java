@@ -414,6 +414,12 @@ class FnBodyNode extends ASTnode {
         }
     }
     
+    
+    public void codeGen(String prologue){
+        if (myStmtList != null){
+            myStmtList.codeGen(prologue);
+        }
+    }
     // 2 kids
     private DeclListNode myDeclList;
     private StmtListNode myStmtList;
@@ -478,6 +484,18 @@ class StmtListNode extends ASTnode {
         }
     }
     
+    
+    public void codeGen(String prologue) {
+        Iterator it = myStmts.iterator();
+        try {
+            while (it.hasNext()) {
+                ((StmtNode)it.next()).codeGen(prologue);
+            }
+        } catch (NoSuchElementException ex) {
+            System.err.println("unexpected NoSuchElementException in StmtListNode.codeGen");
+            System.exit(-1);
+        }
+    }
     // list of kids (StmtNodes)
     private List<StmtNode> myStmts;
 }
@@ -556,6 +574,20 @@ class ExpListNode extends ASTnode {
             System.exit(-1);
         }
 
+    }
+    
+    public void codeGen(String prologue){
+        Iterator it = myExps.iterator();
+        try {
+            while (it.hasNext()) {
+                ExpNode exp = (ExpNode)it.next();
+                exp.codeGen();
+            }
+        } catch (NoSuchElementException ex) {
+            System.err.println("unexpected NoSuchElementException in ExpListNode.processNames");
+            System.exit(-1);
+        }
+        
     }
     
     // list of kids (ExpNodes)
@@ -863,7 +895,7 @@ class FnDeclNode extends DeclNode {
             System.out.println("locals ");
         }
         String prologue = Codegen.nextLabel();
-        myBody.codeGen();
+        myBody.codeGen(prologue);
         Codegen.generateLabeled(prologue, "", "FUNCTION EXIT", "");
         Codegen.generateIndexed("lw", Codegen.RA, Codegen.FP, paramOffset, "load return address");
         Codegen.generateWithComment("move", "save control link", Codegen.T0, Codegen.FP);
@@ -1006,6 +1038,7 @@ abstract class StmtNode extends ASTnode {
     abstract public void processNames(SymTab S);
     abstract public void typeCheck(String T);
     public void codeGen(){}
+    public void codeGen(String prologue){}
 }
 
 class AssignStmtNode extends StmtNode {
@@ -1029,6 +1062,12 @@ class AssignStmtNode extends StmtNode {
     }
 
     public void codeGen(){
+        myExp.codeGen();
+        int varSize = myExp.sizeOfVar();
+        Codegen.genPop(Codegen.T0, varSize);
+    }
+    
+    public void codeGen(String prologue){
         myExp.codeGen();
         int varSize = myExp.sizeOfVar();
         Codegen.genPop(Codegen.T0, varSize);
@@ -1257,6 +1296,13 @@ class WriteIntStmtNode extends StmtNode {
         Codegen.generate("syscall");
     }
     
+    public void codeGen(String prologue){
+        myExp.codeInt();
+        Codegen.genPop(Codegen.A0, 4);
+        Codegen.generate("li", Codegen.V0, 1);
+        Codegen.generate("syscall");
+    }
+    
     // 1 kid
     private ExpNode myExp;
 }
@@ -1294,6 +1340,13 @@ class WriteDblStmtNode extends StmtNode {
         Codegen.generate("syscall");
     }
     
+    public void codeGen(String prologue){
+        myExp.codeGen();
+        Codegen.genPop(Codegen.F12, 8);
+        Codegen.generate("li", Codegen.V0, 3);
+        Codegen.generate("syscall");
+    }
+    
     // 1 kid
     private ExpNode myExp;
 }
@@ -1321,6 +1374,14 @@ class WriteStrStmtNode extends StmtNode {
     }
 
     public void codeGen(){
+        Codegen.generateWithComment("", "WRITE STR");
+        myExp.codeGen();
+        Codegen.genPop(Codegen.A0, 4);
+        Codegen.generate("li", Codegen.V0, 4);
+        Codegen.generate("syscall");
+    }
+    
+    public void codeGen(String prologue){
         Codegen.generateWithComment("", "WRITE STR");
         myExp.codeGen();
         Codegen.genPop(Codegen.A0, 4);
@@ -1385,6 +1446,15 @@ class IfStmtNode extends StmtNode {
         myExp.genJumpCode(trueLab, doneLab);
         Codegen.genLabel(trueLab);
         myStmtList.codeGen();
+        Codegen.genLabel(doneLab);
+    }
+    
+    public void codeGen(String prologue) {
+        String trueLab = Codegen.nextLabel();
+        String doneLab = Codegen.nextLabel();
+        myExp.genJumpCode(trueLab, doneLab);
+        Codegen.genLabel(trueLab);
+        myStmtList.codeGen(prologue);
         Codegen.genLabel(doneLab);
     }
     
@@ -1477,6 +1547,22 @@ class IfElseStmtNode extends StmtNode {
         Codegen.genLabel(doneLab);
         
     }    
+    
+    public void codeGen(String prologue) {
+        String trueLab = Codegen.nextLabel();
+        String elseLab = Codegen.nextLabel();
+        String doneLab = Codegen.nextLabel();
+        myExp.genJumpCode(trueLab, elseLab);
+        Codegen.genLabel(trueLab);
+        myThenDeclList.codeGen();
+        myThenStmtList.codeGen(prologue);
+        Codegen.generate("b", doneLab);
+        Codegen.genLabel(elseLab);
+        myElseDeclList.codeGen();
+        myElseStmtList.codeGen(prologue);
+        Codegen.genLabel(doneLab);
+    } 
+    
     // 5 kids
     private ExpNode myExp;
     private DeclListNode myThenDeclList;
@@ -1544,6 +1630,18 @@ class WhileStmtNode extends StmtNode {
         Codegen.genLabel(doneLab);
     }
     
+    public void codeGen(String prologue) {
+        String whileLab = Codegen.nextLabel();
+        String trueLab = Codegen.nextLabel();
+        String doneLab = Codegen.nextLabel();
+        Codegen.genLabel(whileLab);
+        myExp.genJumpCode(trueLab, doneLab);
+        Codegen.genLabel(trueLab);
+        myStmtList.codeGen(prologue);
+        Codegen.generate("b", whileLab);
+        Codegen.genLabel(doneLab);
+    }
+    
     // 3 kids
     private ExpNode myExp;
     private DeclListNode myDeclList;
@@ -1572,6 +1670,10 @@ class CallStmtNode extends StmtNode {
     }
 
     public void codeGen(){
+        myCall.codeGen();
+    }
+    
+    public void codeGen(String prologue){
         myCall.codeGen();
     }
     
@@ -1631,9 +1733,17 @@ class ReturnStmtNode extends StmtNode {
     public void codeGen(){
         if (myExp != null){
             myExp.codeGen();
-            Codegen.genPop(Codegen.T1, 4);
-            Codegen.generate("sw", Codegen.T1, "0("+Codegen.V0+")");
+            Codegen.genPop(Codegen.V0, 4);
         }
+    }
+    
+    public void codeGen(String prologue){
+        if (myExp != null){
+            myExp.codeGen();
+            Codegen.genPop(Codegen.V0, 4);
+            Codegen.genPush(Codegen.V0, 4);
+        }
+        Codegen.generate("j", prologue);
     }
     
     // 1 kid
@@ -2042,6 +2152,7 @@ class CallExpNode extends ExpNode {
     public void codeGen(){
         myExpList.codeGen();
         myId.genJumpAndLink();
+        Codegen.genPush(Codegen.V0, 4);
     }
 
     // 2 kids

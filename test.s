@@ -7,20 +7,26 @@ _test:		# FUNCTION ENTRY
 	sw      $fp, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	addu    $fp, $sp, 16
-	lw      $t0, 0($fp)
+	li      $t0, 8
 	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
-	lw      $a0, 4($sp)	#POP
+	lw      $t1, 4($sp)	#POP
 	addu    $sp, $sp, 4
-	li      $v0, 1
-	syscall
-	lw      $t0, -4($fp)
-	sw      $t0, 0($sp)	#PUSH
+	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
-	lw      $a0, 4($sp)	#POP
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($fp)
+	lw      $t0, 4($sp)	#POP
 	addu    $sp, $sp, 4
-	li      $v0, 1
-	syscall
+	lw      $t1, 0($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $v0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	j       .L0
 .L0:		# FUNCTION EXIT
 	lw      $ra, -8($fp)	#load return address
 	move    $t0, $fp	#save control link
@@ -63,20 +69,6 @@ main:		# FUNCTION ENTRY
 	lw      $t1, -8($fp)
 	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
-	lw      $t2, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	sw      $t2, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	lw      $t1, -12($fp)
-	sw      $t1, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	lw      $t2, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	lw      $t1, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	add     $t1, $t1, $t2
-	sw      $t1, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
 	lw      $t1, -12($fp)
 	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
@@ -95,6 +87,17 @@ main:		# FUNCTION ENTRY
 	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	jal     _test
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
 	lw      $t0, -8($fp)
 	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
