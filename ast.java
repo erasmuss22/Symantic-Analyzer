@@ -536,7 +536,21 @@ class ExpListNode extends ASTnode {
 	    System.exit(-1);
 	}
     }
+    
+    public void codeGen(){
+        Iterator it = myExps.iterator();
+        try {
+            while (it.hasNext()) {
+                ExpNode exp = (ExpNode)it.next();
+                exp.codeGen();
+            }
+        } catch (NoSuchElementException ex) {
+            System.err.println("unexpected NoSuchElementException in ExpListNode.processNames");
+            System.exit(-1);
+        }
 
+    }
+    
     // list of kids (ExpNodes)
     private List<ExpNode> myExps;
 }
@@ -1551,7 +1565,7 @@ class CallStmtNode extends StmtNode {
     }
 
     public void codeGen(){
-        
+        myCall.codeGen();
     }
     
     // 1 kid
@@ -2014,7 +2028,8 @@ class CallExpNode extends ExpNode {
     }
     
     public void codeGen(){
-        
+        myExpList.codeGen();
+        myId.genJumpAndLink();
     }
 
     // 2 kids

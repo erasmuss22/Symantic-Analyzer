@@ -1,9 +1,8 @@
+void test(int y){
+   printf("%d", y);
+}
 void main() {
    int x;
-   x = 0;
-   while (x < 3){
-	printf("%d", x);
-	x = x + 1;
-   }
-   printf("%d", 67);
+   x = 3;
+   test(x);
 }
