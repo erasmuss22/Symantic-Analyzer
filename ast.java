@@ -2101,6 +2101,10 @@ class PlusPlusNode extends UnaryExpNode {
         Codegen.generate("add", Codegen.T1, Codegen.T1, "1");
         Codegen.genPush(Codegen.T1, 4);
     }
+    
+    public void genJumpCode(String trueLab, String doneLab){
+        myExp.genJumpCode(trueLab, doneLab);
+    }
 }
 
 class MinusMinusNode extends UnaryExpNode {
@@ -2135,6 +2139,10 @@ class MinusMinusNode extends UnaryExpNode {
         Codegen.genPop(Codegen.T1, 4);
         Codegen.generate("sub", Codegen.T1, Codegen.T1, "1");
         Codegen.genPush(Codegen.T1, 4);
+    }
+    
+    public void genJumpCode(String trueLab, String doneLab){
+        myExp.genJumpCode(trueLab, doneLab);
     }
 }
 
@@ -2195,6 +2203,10 @@ class NotNode extends UnaryExpNode {
         Codegen.genPop(Codegen.T1, 4);
         Codegen.generate("not", Codegen.T1, Codegen.T1);
         Codegen.genPush(Codegen.T1, 4);
+    }
+    
+    public void genJumpCode(String trueLab, String doneLab){
+        myExp.genJumpCode(trueLab, doneLab);
     }
 }
 
@@ -2275,6 +2287,10 @@ class AssignNode extends BinaryExpNode {
             //Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());
         }    
     }
+    
+    public void genJumpCode(String trueLab, String doneLab){
+        myExp1.genJumpCode(trueLab, doneLab);
+    }
 }
 
 abstract class ArithmeticBinExpNode extends BinaryExpNode {
@@ -2305,6 +2321,10 @@ abstract class ArithmeticBinExpNode extends BinaryExpNode {
     public void codeGen(){
         
     }
+    
+    public void genJumpCode(String trueLab, String doneLab){
+        
+    }
 }
 
 abstract class EqualityBinExpNode extends BinaryExpNode {
@@ -2332,6 +2352,9 @@ abstract class EqualityBinExpNode extends BinaryExpNode {
     
     public void codeGen(){
         
+    }
+    
+    public void genJumpCode(String trueLab, String doneLab){
     }
 }
 
@@ -2361,6 +2384,10 @@ abstract class LogicalBinExpNode extends BinaryExpNode {
     
     public void codeGen(){
         
+    }
+    
+    public void genJumpCode(String trueLab, String doneLab){
+
     }
 }
 
@@ -2507,6 +2534,20 @@ class EqualsNode extends EqualityBinExpNode {
         Codegen.generate("seq", Codegen.T1, Codegen.T1, Codegen.T2);
         Codegen.genPush(Codegen.T1, 4);
     }
+    
+    public void genJumpCode(String trueLab, String doneLab){
+        System.out.println(myExp1.getValue() + "equality");
+        myExp1.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        myExp2.codeGen();
+        System.out.println(myExp2.getValue() + "equality");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("bne", Codegen.T1, Codegen.T2, doneLab);
+        Codegen.genPush(Codegen.T1, 4);
+        Codegen.generate("b", trueLab);
+    }
 }
 
 class NotEqualsNode extends EqualityBinExpNode {
@@ -2533,6 +2574,20 @@ class NotEqualsNode extends EqualityBinExpNode {
         Codegen.genPop(Codegen.T1, 4);
         Codegen.generate("sne", Codegen.T1, Codegen.T1, Codegen.T2);
         Codegen.genPush(Codegen.T1, 4);
+    }
+    
+    public void genJumpCode(String trueLab, String doneLab){
+        System.out.println(myExp1.getValue() + "equality");
+        myExp1.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        myExp2.codeGen();
+        System.out.println(myExp2.getValue() + "equality");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("beq", Codegen.T1, Codegen.T2, doneLab);
+        Codegen.genPush(Codegen.T1, 4);
+        Codegen.generate("b", trueLab);
     }
 }
 
@@ -2562,6 +2617,20 @@ class LessNode extends EqualityBinExpNode {
         Codegen.generate("slt", Codegen.T1, Codegen.T1, Codegen.T2);
         Codegen.genPush(Codegen.T1, 4);
     }
+    
+    public void genJumpCode(String trueLab, String doneLab){
+        System.out.println(myExp1.getValue() + "equality");
+        myExp1.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        myExp2.codeGen();
+        System.out.println(myExp2.getValue() + "equality");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("bge", Codegen.T1, Codegen.T2, doneLab);
+        Codegen.genPush(Codegen.T1, 4);
+        Codegen.generate("b", trueLab);
+    }
 }
 
 class GreaterNode extends EqualityBinExpNode {
@@ -2589,6 +2658,20 @@ class GreaterNode extends EqualityBinExpNode {
         Codegen.genPop(Codegen.T1, 4);
         Codegen.generate("sgt", Codegen.T1, Codegen.T1, Codegen.T2);
         Codegen.genPush(Codegen.T1, 4);
+    }
+    
+    public void genJumpCode(String trueLab, String doneLab){
+        System.out.println(myExp1.getValue() + "equality");
+        myExp1.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        myExp2.codeGen();
+        System.out.println(myExp2.getValue() + "equality");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("ble", Codegen.T1, Codegen.T2, doneLab);
+        Codegen.genPush(Codegen.T1, 4);
+        Codegen.generate("b", trueLab);
     }
 }
 
@@ -2618,6 +2701,20 @@ class LessEqNode extends EqualityBinExpNode {
         Codegen.generate("sle", Codegen.T1, Codegen.T1, Codegen.T2);
         Codegen.genPush(Codegen.T1, 4);
     }
+    
+    public void genJumpCode(String trueLab, String doneLab){
+        System.out.println(myExp1.getValue() + "equality");
+        myExp1.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        myExp2.codeGen();
+        System.out.println(myExp2.getValue() + "equality");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("bgt", Codegen.T1, Codegen.T2, doneLab);
+        Codegen.genPush(Codegen.T1, 4);
+        Codegen.generate("b", trueLab);
+    }
 }
 
 class GreaterEqNode extends EqualityBinExpNode {
@@ -2645,6 +2742,20 @@ class GreaterEqNode extends EqualityBinExpNode {
         Codegen.genPop(Codegen.T1, 4);
         Codegen.generate("sge", Codegen.T1, Codegen.T1, Codegen.T2);
         Codegen.genPush(Codegen.T1, 4);
+    }
+    
+    public void genJumpCode(String trueLab, String doneLab){
+        System.out.println(myExp1.getValue() + "equality");
+        myExp1.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        myExp2.codeGen();
+        System.out.println(myExp2.getValue() + "equality");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("blt", Codegen.T1, Codegen.T2, doneLab);
+        Codegen.genPush(Codegen.T1, 4);
+        Codegen.generate("b", trueLab);
     }
 }
 
