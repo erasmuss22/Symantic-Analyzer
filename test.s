@@ -7,51 +7,13 @@ main:		# FUNCTION ENTRY
 	subu    $sp, $sp, 4
 	addu    $fp, $sp, 8
 	subu    $sp, $sp, 28
-	li      $t0, 3
+	li      $t0, 10
 	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $t1, 4($sp)	#POP
 	addu    $sp, $sp, 4
 	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
-	sw      $t1, -8($fp)
-	lw      $t0, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	li      $t0, 4
-	sw      $t0, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	lw      $t1, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	sw      $t1, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	sw      $t1, -12($fp)
-	lw      $t0, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	li      $t0, 7
-	sw      $t0, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	lw      $t1, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	sw      $t1, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	sw      $t1, -20($fp)
-	lw      $t0, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	lw      $t1, -12($fp)
-	sw      $t1, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	lw      $t1, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	sw      $t1, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	sw      $t1, -20($fp)
-	lw      $t0, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	lw      $t1, -20($fp)
-	sw      $t1, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	lw      $t1, 4($sp)	#POP
-	addu    $sp, $sp, 4
 	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	sw      $t1, -8($fp)
@@ -64,14 +26,55 @@ main:		# FUNCTION ENTRY
 	addu    $sp, $sp, 4
 	li      $v0, 1
 	syscall
-	lw      $t0, -20($fp)
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	add     $t1, $t1, 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -12($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t0, -12($fp)
 	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $a0, 4($sp)	#POP
 	addu    $sp, $sp, 4
 	li      $v0, 1
 	syscall
-	lw      $t0, -12($fp)
+	lw      $t0, -8($fp)
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sub     $t1, $t1, 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -20($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t0, -20($fp)
 	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $a0, 4($sp)	#POP

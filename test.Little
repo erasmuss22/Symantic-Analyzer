@@ -2,12 +2,11 @@ void main() {
    int x;
    int y;
    int z;
-   x = 3;
-   y = 4;
-   z = 7;
-   z = y;
-   x = z;
+   x = 10;
    printf("%d", x);
-   printf("%d", z);
+   y = x++;
    printf("%d", y);
+   printf("%d", x);
+   z = x--;
+   printf("%d", z);
 }

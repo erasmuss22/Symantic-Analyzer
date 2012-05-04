@@ -1604,6 +1604,7 @@ abstract class ExpNode extends ASTnode {
     abstract public int charnum();
     abstract public void codeGen();
     public void codeInt(){}
+    public void assignVar(){}
     public int sizeOfVar(){
         if (typeCheck().equals("double")) return 8;
         else return 4;
@@ -1838,8 +1839,9 @@ class IdNode extends ExpNode {
                 Codegen.generate("lw", Codegen.T0, "_" + myStrVal);
             }
             else{
+                Codegen.genPush(Codegen.T1, 4);
                 Codegen.generateIndexed("sw", Codegen.T1, Codegen.FP, mySym.getFPOffset() - 8);
-                System.out.println("local idnode " + mySym.getFPOffset());
+                System.out.println("assign " + mySym.getFPOffset());
             }
         }
         else{
@@ -1987,7 +1989,8 @@ abstract class UnaryExpNode extends ExpNode {
 
     
     public void codeGen(){
-        
+        myExp.codeGen();
+        System.out.println("unary");
     }
     
     // one kid
@@ -2056,7 +2059,11 @@ class PlusPlusNode extends UnaryExpNode {
     }
     
     public void codeGen(){
-        
+        System.out.println("plus plus");
+        myExp.codeGen();
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("add", Codegen.T1, Codegen.T1, "1");
+        Codegen.genPush(Codegen.T1, 4);
     }
 }
 
@@ -2087,7 +2094,11 @@ class MinusMinusNode extends UnaryExpNode {
     }
     
     public void codeGen(){
-        
+        System.out.println("minus minus");
+        myExp.codeGen();
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("sub", Codegen.T1, Codegen.T1, "1");
+        Codegen.genPush(Codegen.T1, 4);
     }
 }
 
