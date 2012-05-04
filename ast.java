@@ -1441,10 +1441,21 @@ class IfElseStmtNode extends StmtNode {
 	p.println("}");
     }
 
-    public void codeGen(){
+    public void codeGen() {
+        String trueLab = Codegen.nextLabel();
+        String elseLab = Codegen.nextLabel();
+        String doneLab = Codegen.nextLabel();
+        myExp.genJumpCode(trueLab, elseLab);
+        Codegen.genLabel(trueLab);
+        myThenDeclList.codeGen();
+        myThenStmtList.codeGen();
+        Codegen.generate("b", doneLab);
+        Codegen.genLabel(elseLab);
+        myElseDeclList.codeGen();
+        myElseStmtList.codeGen();
+        Codegen.genLabel(doneLab);
         
-    }
-    
+    }    
     // 5 kids
     private ExpNode myExp;
     private DeclListNode myThenDeclList;
