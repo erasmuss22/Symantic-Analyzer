@@ -3,7 +3,7 @@ void main() {
    int x;
    x = 10;
    y = x--;
-   x = 3 + x * y;
+   x = 2 + x / 2 * y;
    printf("%d", x);
    printf("%d", y);
 }

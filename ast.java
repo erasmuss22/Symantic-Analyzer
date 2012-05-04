@@ -2442,7 +2442,17 @@ class DivideNode extends ArithmeticBinExpNode {
     }
     
     public void codeGen(){
-        
+        System.out.println(myExp1.getValue() + "multiplication");
+        myExp1.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        myExp2.codeGen();
+        System.out.println(myExp2.getValue() + "multiplication");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("div", Codegen.T1, Codegen.T2);
+        Codegen.generate("mflo", Codegen.T1);
+        Codegen.genPush(Codegen.T1, 4);
     }
 }
 
