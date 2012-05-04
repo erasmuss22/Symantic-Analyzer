@@ -1230,7 +1230,7 @@ class WriteIntStmtNode extends StmtNode {
     }
 
     public void codeGen(){
-        myExp.codeGen();
+        myExp.codeInt();
         Codegen.genPop(Codegen.A0, 4);
         Codegen.generate("li", Codegen.V0, 1);
         Codegen.generate("syscall");
@@ -1603,7 +1603,7 @@ abstract class ExpNode extends ASTnode {
     abstract public int linenum();
     abstract public int charnum();
     abstract public void codeGen();
-    
+    public void codeInt(){}
     public int sizeOfVar(){
         if (typeCheck().equals("double")) return 8;
         else return 4;
@@ -1638,6 +1638,12 @@ class IntLitNode extends ExpNode {
     }
 
     public void codeGen(){
+        String s = "" + myIntVal;
+        Codegen.generate("li", Codegen.T0, s);
+        Codegen.genPush(Codegen.T0, 4);
+    }
+    
+    public void codeInt(){
         String s = "" + myIntVal;
         Codegen.generate("li", Codegen.T0, s);
         Codegen.genPush(Codegen.T0, 4);
@@ -1812,6 +1818,27 @@ class IdNode extends ExpNode {
             }
             else{
                 Codegen.generateIndexed("sw", Codegen.T1, Codegen.FP, mySym.getFPOffset() - 8);
+                System.out.println("local idnode " + mySym.getFPOffset());
+            }
+        }
+        else{
+            if (mySym.getOffset() <= 0){
+                Codegen.generate("l.d", Codegen.F0, "_" + myStrVal);
+            }
+            else{
+                Codegen.generateIndexed("l.d", Codegen.F0, Codegen.FP, mySym.getFPOffset() - 8);
+            }
+        }
+    }
+    
+    public void codeInt(){
+        if (mySym.type().equals("int")){
+            if (mySym.getGlobal()){
+                Codegen.generate("lw", Codegen.T0, "_" + myStrVal);
+            }
+            else{
+                Codegen.generateIndexed("lw", Codegen.T0, Codegen.FP, mySym.getFPOffset() - 8);
+                Codegen.genPush(Codegen.T0, 4);
                 System.out.println("local idnode " + mySym.getFPOffset());
             }
         }
@@ -2173,14 +2200,8 @@ class AssignNode extends BinaryExpNode {
         else{
             System.out.println("local not global");
             ((IdNode)myExp1).codeGen();
-            Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());
+            //Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());
         }    
-        if (myExp2.sizeOfVar() == 8){
-            Codegen.generateIndexed("s.d", Codegen.F0, Codegen.T0, 0);
-        }
-        else{
-            Codegen.generateIndexed("sw", Codegen.T1, Codegen.T0, 0);
-        } 
     }
 }
 
