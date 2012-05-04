@@ -2792,6 +2792,19 @@ class AndNode extends LogicalBinExpNode {
         Codegen.genPush(Codegen.T1, 4);
     }
     
+    public void genJumpCode(String trueLab, String doneLab){
+        String newLab = Codegen.nextLabel();
+        System.out.println(myExp1.getValue() + "AND");
+        myExp1.genJumpCode(newLab, doneLab);
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        Codegen.genLabel(newLab);
+        myExp2.genJumpCode(trueLab, doneLab);
+        System.out.println(myExp2.getValue() + "AND");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+    }
+    
 }
 
 class OrNode extends LogicalBinExpNode {
@@ -2819,6 +2832,19 @@ class OrNode extends LogicalBinExpNode {
         Codegen.genPop(Codegen.T1, 4);
         Codegen.generate("or", Codegen.T1, Codegen.T1, Codegen.T2);
         Codegen.genPush(Codegen.T1, 4);
+    }
+    
+    public void genJumpCode(String trueLab, String doneLab){
+        String newLab = Codegen.nextLabel();
+        System.out.println(myExp1.getValue() + "OR");
+        myExp1.genJumpCode(trueLab, newLab);
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        Codegen.genLabel(newLab);
+        myExp2.genJumpCode(trueLab, doneLab);
+        System.out.println(myExp2.getValue() + "OR");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
     }
 }
 
