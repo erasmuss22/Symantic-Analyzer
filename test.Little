@@ -1,10 +1,10 @@
 void main() {
    int y;
    int x;
-   x = 0;
-   y = x--;
-   x = !x;
-   y = !y;
+   x = 3;
+   y = 2;
+   x = x >= y;
+   y = y <= 3;
    printf("%d", x);
    printf("%d", y);
 }

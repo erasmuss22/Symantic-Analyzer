@@ -2470,7 +2470,16 @@ class EqualsNode extends EqualityBinExpNode {
 	p.print(")");
     }
     public void codeGen(){
-        
+        System.out.println(myExp1.getValue() + "equality");
+        myExp1.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        myExp2.codeGen();
+        System.out.println(myExp2.getValue() + "equality");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("seq", Codegen.T1, Codegen.T1, Codegen.T2);
+        Codegen.genPush(Codegen.T1, 4);
     }
 }
 
@@ -2488,7 +2497,16 @@ class NotEqualsNode extends EqualityBinExpNode {
 	p.print(")");
     }
     public void codeGen(){
-        
+        System.out.println(myExp1.getValue() + "not equality");
+        myExp1.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        myExp2.codeGen();
+        System.out.println(myExp2.getValue() + "not equality");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("sne", Codegen.T1, Codegen.T1, Codegen.T2);
+        Codegen.genPush(Codegen.T1, 4);
     }
 }
 
@@ -2507,7 +2525,16 @@ class LessNode extends EqualityBinExpNode {
     }
     
     public void codeGen(){
-        
+        System.out.println(myExp1.getValue() + "less than equality");
+        myExp1.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        myExp2.codeGen();
+        System.out.println(myExp2.getValue() + "less than equality");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("slt", Codegen.T1, Codegen.T1, Codegen.T2);
+        Codegen.genPush(Codegen.T1, 4);
     }
 }
 
@@ -2526,7 +2553,16 @@ class GreaterNode extends EqualityBinExpNode {
     }
     
     public void codeGen(){
-        
+        System.out.println(myExp1.getValue() + "> equality");
+        myExp1.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        myExp2.codeGen();
+        System.out.println(myExp2.getValue() + "> equality");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("sgt", Codegen.T1, Codegen.T1, Codegen.T2);
+        Codegen.genPush(Codegen.T1, 4);
     }
 }
 
@@ -2545,7 +2581,16 @@ class LessEqNode extends EqualityBinExpNode {
     }
     
     public void codeGen(){
-        
+        System.out.println(myExp1.getValue() + "<= equality");
+        myExp1.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        myExp2.codeGen();
+        System.out.println(myExp2.getValue() + "<= equality");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("sle", Codegen.T1, Codegen.T1, Codegen.T2);
+        Codegen.genPush(Codegen.T1, 4);
     }
 }
 
@@ -2564,7 +2609,16 @@ class GreaterEqNode extends EqualityBinExpNode {
     }
     
     public void codeGen(){
-        
+        System.out.println(myExp1.getValue() + ">= equality");
+        myExp1.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        myExp2.codeGen();
+        System.out.println(myExp2.getValue() + ">= equality");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("sge", Codegen.T1, Codegen.T1, Codegen.T2);
+        Codegen.genPush(Codegen.T1, 4);
     }
 }
 
