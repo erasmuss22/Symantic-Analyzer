@@ -19,21 +19,9 @@ main:		# FUNCTION ENTRY
 	sw      $t1, -8($fp)
 	lw      $t0, 4($sp)	#POP
 	addu    $sp, $sp, 4
-	li      $t0, 0
-	beqz    $t0, .L3
-	b       .L1
-	lw      $t2, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	sw      $t2, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-.L3:
-	li      $t0, 1
-	beqz    $t0, .L2
-	b       .L1
-	lw      $t2, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	lw      $t1, 4($sp)	#POP
-	addu    $sp, $sp, 4
+	lw      $t0, -8($fp)
+	beqz    $t0, .L1
+	b       .L2
 .L1:
 	lw      $t0, -8($fp)
 	sw      $t0, 0($sp)	#PUSH

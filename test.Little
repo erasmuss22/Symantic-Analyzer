@@ -1,7 +1,7 @@
 void main() {
    int x;
    x = 3;
-   if (0 || 1) {
+   if (!x) {
      printf("%d", x);
    }
    printf("%d", 12);

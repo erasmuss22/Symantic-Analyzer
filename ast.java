@@ -2206,7 +2206,7 @@ class NotNode extends UnaryExpNode {
     }
     
     public void genJumpCode(String trueLab, String doneLab){
-        myExp.genJumpCode(trueLab, doneLab);
+        myExp.genJumpCode(doneLab, trueLab);
     }
 }
 
