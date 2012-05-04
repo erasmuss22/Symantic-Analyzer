@@ -1,6 +1,3 @@
-	.data
-	.align 2
-_x:	.space 4	# GLOBAL
 	.text
 	.globl main
 main:		# FUNCTION ENTRY
@@ -9,7 +6,7 @@ main:		# FUNCTION ENTRY
 	sw      $fp, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	addu    $fp, $sp, 8
-	subu    $sp, $sp, 4
+	subu    $sp, $sp, 12
 	li      $t0, 10
 	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
@@ -17,11 +14,12 @@ main:		# FUNCTION ENTRY
 	addu    $sp, $sp, 4
 	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
-	la      $t0, _x
-	sw      $t1, 0($t0)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -12($fp)
 	lw      $t0, 4($sp)	#POP
 	addu    $sp, $sp, 4
-	lw      $t1, _x
+	lw      $t1, -12($fp)
 	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $t1, 4($sp)	#POP
@@ -38,29 +36,30 @@ main:		# FUNCTION ENTRY
 	sw      $t1, -8($fp)
 	lw      $t0, 4($sp)	#POP
 	addu    $sp, $sp, 4
-	lw      $t1, _x
+	li      $t0, 3
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
 	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $t2, 4($sp)	#POP
 	addu    $sp, $sp, 4
 	sw      $t2, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
-	li      $t0, 1
-	sw      $t0, 0($sp)	#PUSH
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $t2, 4($sp)	#POP
 	addu    $sp, $sp, 4
 	lw      $t1, 4($sp)	#POP
 	addu    $sp, $sp, 4
-	sub     $t1, $t1, $t2
+	mult    $t1, $t2
+	mflo    $t1
 	sw      $t1, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	lw      $t2, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	sw      $t2, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	li      $t0, 2
-	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $t2, 4($sp)	#POP
 	addu    $sp, $sp, 4
@@ -69,29 +68,16 @@ main:		# FUNCTION ENTRY
 	add     $t1, $t1, $t2
 	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
-	lw      $t2, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	sw      $t2, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	li      $t0, 3
-	sw      $t0, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	lw      $t2, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	lw      $t1, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	sub     $t1, $t1, $t2
-	sw      $t1, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
 	lw      $t1, 4($sp)	#POP
 	addu    $sp, $sp, 4
 	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
-	la      $t0, _x
-	sw      $t1, 0($t0)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -12($fp)
 	lw      $t0, 4($sp)	#POP
 	addu    $sp, $sp, 4
-	lw      $t0, _x
+	lw      $t0, -12($fp)
 	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $a0, 4($sp)	#POP
