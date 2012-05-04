@@ -1,6 +1,5 @@
 import java.io.*;
 import java.util.*;
-
 // **********************************************************************
 // The ASTnode class defines the nodes of the abstract-syntax tree that
 // represents a Little program.
@@ -175,12 +174,12 @@ class ProgramNode extends ASTnode {
      * process all of the globals and functions in the program
      **/
     public void processNames() {
-        SymTab S = new SymTab();
-        myDeclList.processNames(S, "global");
-        Sym main = S.globalLookup("main");
-        if (main == null) {
-            Errors.fatal(0, 0, "No main function");
-        }
+	SymTab S = new SymTab();
+	myDeclList.processNames(S, "global");
+	Sym main = S.globalLookup("main");
+	if (main == null) {
+		Errors.fatal(0, 0, "No main function");
+	}
     }
 
     /** typeCheck **/
@@ -188,14 +187,14 @@ class ProgramNode extends ASTnode {
 	myDeclList.typeCheck();
     }
 
-    public void unparse(PrintWriter p, int indent) {
-	myDeclList.unparse(p, indent);
-    }
-
     public void codeGen(){
         myDeclList.codeGen();
     }
     
+    public void unparse(PrintWriter p, int indent) {
+	myDeclList.unparse(p, indent);
+    }
+
     // 1 kid
     private DeclListNode myDeclList;
 }
@@ -236,18 +235,35 @@ class DeclListNode extends ASTnode {
         
     }
     
-    public void processNames(SymTab S, int offset) {
+    public int processNames(SymTab S, int totalOffset) {
         Iterator it = myDecls.iterator();
         try {
-            offset = 0;
             while (it.hasNext()) {
-                offset += ((DeclNode)it.next()).processNames(S, offset);
+                Sym sym = ((DeclNode)it.next()).processNames(S, totalOffset);
+                if (sym.type().equals("int")){
+                    sym.setOffset(4);
+                    sym.setFPOffset(totalOffset);
+                    totalOffset -= 4;
+                    if (!it.hasNext()) {
+                        totalOffset -= 4;
+                    }
+                }    
+                else{
+                    sym.setOffset(8);
+                    sym.setFPOffset(totalOffset);
+                    totalOffset -= 8;
+                    if (!it.hasNext()) {
+                        totalOffset -= 8;
+                    }    
+                }
+
             }
-            localOffset = offset;
+            return totalOffset;
         } catch (NoSuchElementException ex) {
             System.err.println("unexpected NoSuchElementException in DeclListNode.processNames");
             System.exit(-1);
         }
+        return 0;
         
     }
 
@@ -265,17 +281,22 @@ class DeclListNode extends ASTnode {
 	
     }
 
-    // ** unparse **
-    public void unparse(PrintWriter p, int indent) {
+    public int calcOffset(){
 	Iterator it = myDecls.iterator();
+	int offset = 0;
+	VarDeclNode temp;
 	try {
-	    while (it.hasNext()) {
-		((DeclNode)it.next()).unparse(p, indent);
+	    while (it.hasNext()){
+		temp = (VarDeclNode)it.next();
+		offset += temp.calcOffset();
+            System.out.println(offset);
 	    }
+        return offset;
 	} catch (NoSuchElementException ex) {
-	    System.err.println("unexpected NoSuchElementException in DeclListNode.unparse");
+	    System.err.println("unexpected NoSuchElementException in DeclListNode.calcOffset");
 	    System.exit(-1);
 	}
+        return 0;
     }
 
     public void codeGen(){
@@ -290,62 +311,75 @@ class DeclListNode extends ASTnode {
         }
     }
     
-    public int getLocalOffset(){
-        return this.localOffset;
+    // ** unparse **
+    public void unparse(PrintWriter p, int indent) {
+	Iterator it = myDecls.iterator();
+	try {
+	    while (it.hasNext()) {
+		((DeclNode)it.next()).unparse(p, indent);
+	    }
+	} catch (NoSuchElementException ex) {
+	    System.err.println("unexpected NoSuchElementException in DeclListNode.unparse");
+	    System.exit(-1);
+	}
     }
-    
+
     // list of kids (DeclNodes)
     private List<DeclNode> myDecls;
-    private int localOffset;
 }
 
 class FormalsListNode extends ASTnode {
     public FormalsListNode(List<FormalDeclNode> L) {
-        myFormals = L;
-        }
-
-        /** processNames
-         *
-         * given: a symbol table S
-         * do:    process all of the formals in the list
-         **/
-        public LinkedList processNames(SymTab S) {
-        LinkedList L = new LinkedList();
-            if (myFormals != null){
-                Iterator it = myFormals.iterator();
-                try {
-                    while (it.hasNext()) {
-                        paramOffset = 0;
-                        Sym sym = ((FormalDeclNode)it.next()).processNames(S);
-                        if (sym != null){
-                            if (sym.type().equals("int")){
-                                sym.setOffset(paramOffset);
-                                paramOffset -= 4;
-                            }
-                            else {
-                                sym.setOffset(paramOffset);
-                                paramOffset -= 8;
-                            }
-                        }
-                    if (sym != null) L.add(sym);
-                    }
-                } catch (NoSuchElementException ex) {
-                    System.err.println("unexpected NoSuchElementException in FormalsListNode.processNames");
-                    System.exit(-1);
-                }
-            }
-        return L;
-        }
-    
-    public int getParamOffset(){
-        return this.paramOffset;
+	myFormals = L;
     }
 
-        /** length **/
-        public int length() {
-            int count = 0;
-            if (myFormals != null) return myFormals.size();
-            else return count;
+    /** processNames
+     *
+     * given: a symbol table S
+     * do:    process all of the formals in the list
+     **/
+    public LinkedList processNames(SymTab S) {
+	LinkedList L = new LinkedList();
+        if (myFormals != null){
+            Iterator it = myFormals.iterator();
+            try {
+                int offset = 0;
+                while (it.hasNext()) {
+                    Sym sym = ((FormalDeclNode)it.next()).processNames(S);
+                    if (sym.type().equals("int")){
+                        sym.setOffset(4);
+                        sym.setFPOffset(offset);
+                        offset -= 4;
+                        if (!it.hasNext()) {
+                            totalOffset = offset;
+                            totalOffset -= 4;
+                        }
+                    }    
+                    else{
+                        sym.setOffset(8);
+                        sym.setFPOffset(offset);
+                        offset -= 8;
+                        if (!it.hasNext()) {
+                            totalOffset = offset;
+                            totalOffset -= 8;
+                        }    
+                    }
+                    if (sym != null) L.add(sym);
+                }
+            } catch (NoSuchElementException ex) {
+                System.err.println("unexpected NoSuchElementException in FormalsListNode.processNames");
+                System.exit(-1);
+            }   
+        }
+        
+	return L;
+    }
+
+    /** length **/
+    public int length() {
+        int count = 0;
+        if (myFormals != null) return myFormals.size();
+        else return count;
     }
 
     // ** unparse **
@@ -363,10 +397,30 @@ class FormalsListNode extends ASTnode {
 	    System.exit(-1);
 	}
     }
+    
+    public int getTotalOffset(){
+        return this.totalOffset;
+    }
+    
+    public int calcOffset(){
+            int offset = 0;
+        if (myFormals != null){
+            Iterator it = myFormals.iterator();
+            try {
+                while (it.hasNext()) {
+                offset += ((FormalDeclNode)it.next()).calcOffset();
+                    }
+            } catch (NoSuchElementException ex) {
+                System.err.println("unexpected NoSuchElementException in FormalDeclNode.calcOffset");
+                System.exit(-1);
+            }
+        }
+	return offset;
+    }
 
     // list of kids (FormalDeclNodes)
     private List<FormalDeclNode> myFormals;
-    private int paramOffset;
+    private int totalOffset;
 }
 
 class FnBodyNode extends ASTnode {
@@ -381,9 +435,10 @@ class FnBodyNode extends ASTnode {
 	myStmtList.processNames(S);
     }
     
-    public void processNames(SymTab S, int offset) {
-        myDeclList.processNames(S, offset);
+    public int processNames(SymTab S, int totalOffset) {
+        totalOffset = myDeclList.processNames(S, totalOffset);
         myStmtList.processNames(S);
+        return totalOffset;
     }
 
     /** typeCheck **/
@@ -396,17 +451,20 @@ class FnBodyNode extends ASTnode {
 	if (myDeclList != null) myDeclList.unparse(p, indent+2);
 	if (myStmtList != null) myStmtList.unparse(p, indent+2);
     }
-    
-    public DeclListNode getDeclList(){
-        return this.myDeclList;
+
+    public int calcOffset(){
+	return myDeclList.calcOffset();
     }
     
     public void codeGen(){
+        /*if (myDeclList != null){
+            myDeclList.codeGen();
+        }*/
         if (myStmtList != null){
             myStmtList.codeGen();
         }
     }
-    
+
     // 2 kids
     private DeclListNode myDeclList;
     private StmtListNode myStmtList;
@@ -458,7 +516,7 @@ class StmtListNode extends ASTnode {
 	    System.exit(-1);
 	}
     }
-
+    
     public void codeGen() {
         Iterator it = myStmts.iterator();
         try {
@@ -470,7 +528,7 @@ class StmtListNode extends ASTnode {
             System.exit(-1);
         }
     }
-    
+
     // list of kids (StmtNodes)
     private List<StmtNode> myStmts;
 }
@@ -552,11 +610,11 @@ abstract class DeclNode extends ASTnode {
     //       is simply ignored)
     abstract public Sym processNames(SymTab S);
     abstract public Sym processNames(SymTab S, String status);
-    abstract public int processNames(SymTab S, int offset);
-    abstract public void codeGen();
+    abstract public Sym processNames(SymTab S, int totalOffset);
     // default version of typeCheck for var and formal decls
     public void typeCheck() {
     }
+    abstract public void codeGen();
 }
 
 class VarDeclNode extends DeclNode {
@@ -587,9 +645,9 @@ class VarDeclNode extends DeclNode {
 	}
 	if (! badDecl) {
 	    try {
-		Sym sym = new Sym(myType.type());
-		S.insert(name, sym);
-		myId.link(sym);
+            Sym sym = new Sym(myType.type());
+            S.insert(name, sym);
+            myId.link(sym);
 	    } catch (DuplicateException ex) {
 		System.err.println("unexpected DuplicateException in VarDeclNode.processNames");
 		System.exit(-1);
@@ -600,10 +658,6 @@ class VarDeclNode extends DeclNode {
 	}
 	return null;  // return value ignored
     }
-    
-    /*
-        Same function, but used to set a variable as a global
-     */
     
     public Sym processNames(SymTab S, String status) {
         String name = myId.name();
@@ -621,7 +675,7 @@ class VarDeclNode extends DeclNode {
         if (! badDecl) {
             try {
                 Sym sym = new Sym(myType.type());
-                sym.setGlobal();
+                sym.setOffset(0);                   //reverse logic, globals are 0
                 S.insert(name, sym);
                 myId.link(sym);
             } catch (DuplicateException ex) {
@@ -635,8 +689,7 @@ class VarDeclNode extends DeclNode {
         return null;  // return value ignored
     }
     
-    
-    public int processNames(SymTab S, int offset) {
+    public Sym processNames(SymTab S, int totalOffset) {
         String name = myId.name();
         boolean badDecl = false;
         if (isVoidType(myType.type())) {
@@ -652,17 +705,9 @@ class VarDeclNode extends DeclNode {
         if (! badDecl) {
             try {
                 Sym sym = new Sym(myType.type());
-                if (myType.type().equals("int")){
-                    sym.setFPOffset(offset);
-                    offset -= 4;
-                }
-                else {
-                    sym.setFPOffset(offset);
-                    offset -= 8;
-                }
                 S.insert(name, sym);
                 myId.link(sym);
-                return offset;
+                return sym;
             } catch (DuplicateException ex) {
                 System.err.println("unexpected DuplicateException in VarDeclNode.processNames");
                 System.exit(-1);
@@ -671,7 +716,7 @@ class VarDeclNode extends DeclNode {
                 System.exit(-1);
             }
         }
-        return 0;  // return value ignored
+        return null;  // return value ignored
     }
 
     // ** unparse **
@@ -683,18 +728,22 @@ class VarDeclNode extends DeclNode {
 	p.println(";");
     }
 
+    public int calcOffset(){
+        return myId.calcOffset();
+    }
+    
     public void codeGen() {
-        if (myId.sym().getGlobal()){
+        if (myId.calcOffset() <= 0){
             Codegen.generate(".data");
             Codegen.generate(".align 2");
             if (myId.type().equals("int")){
-                Codegen.generateLabeled("_"+myId.name(), ".space " + 4, "GLOBAL", "");
+            Codegen.generateLabeled("_"+myId.name(), ".space " + 4, "GLOBAL", "");
             }    else{
                 Codegen.generateLabeled("_"+myId.name(), ".space " + 8, "GLOBAL", "");
             }
         }
     }
-    
+
     // 2 kids
     private TypeNode myType;
     private IdNode myId;
@@ -734,8 +783,7 @@ class FnDeclNode extends DeclNode {
 	}
 	else {
 	    try {
-		sym = new FnSym(myType.type(),
-				myFormalsList.length());
+        sym = new FnSym(myType.type(), myFormalsList.length());
 		S.insert(name, sym);
 		myId.link(sym);
 	    } catch (DuplicateException ex) {
@@ -746,19 +794,24 @@ class FnDeclNode extends DeclNode {
 		System.exit(-1);
 	    }
 	}
-	S.addMap();
-	LinkedList L = myFormalsList.processNames(S);
-	if (sym != null) sym.addFormals(L);
-	myBody.processNames(S);
-	try {
-	    S.removeMap();
-	} catch (EmptySymTabException ex) {
-		System.err.println("unexpected EmptySymTabException in FnDeclNode.processNames");
-		System.exit(-1);
-	    }
-	return null;
+        S.addMap();
+        LinkedList L = myFormalsList.processNames(S);
+        int totalOffset = myFormalsList.getTotalOffset();
+        FormalDeclNode temp;
+        int offset;
+        if (sym != null) sym.addFormals(L);
+        totalOffset = myBody.processNames(S, totalOffset);
+        offset = calcOffset();
+        sym.setOffset(offset);
+        try {
+            S.removeMap();
+        } catch (EmptySymTabException ex) {
+            System.err.println("unexpected EmptySymTabException in FnDeclNode.processNames");
+            System.exit(-1);
+            }
+        return null;
     }
-    
+
     public Sym processNames(SymTab S, String status) {
         String name = myId.name();
         FnSym sym = null;
@@ -768,8 +821,7 @@ class FnDeclNode extends DeclNode {
         }
         else {
             try {
-                sym = new FnSym(myType.type(),
-                                myFormalsList.length());
+                sym = new FnSym(myType.type(), myFormalsList.length());
                 S.insert(name, sym);
                 myId.link(sym);
             } catch (DuplicateException ex) {
@@ -781,15 +833,14 @@ class FnDeclNode extends DeclNode {
             }
         }
         S.addMap();
-        int paramOffset = 0;
         LinkedList L = myFormalsList.processNames(S);
-        paramOffset = myFormalsList.getParamOffset();
+        Iterator it = L.iterator();
+        FormalDeclNode temp;
+        int offset;
         if (sym != null) sym.addFormals(L);
-        int localOffset = 0;
-        myBody.processNames(S, localOffset);
-        localOffset = myBody.getDeclList().getLocalOffset();
-        sym.setParamOffset(paramOffset);
-        sym.setLocalOffset(localOffset);
+        myBody.processNames(S);
+        offset = calcOffset();
+        sym.setOffset(offset);
         try {
             S.removeMap();
         } catch (EmptySymTabException ex) {
@@ -799,13 +850,21 @@ class FnDeclNode extends DeclNode {
         return null;
     }
     
-    public int processNames(SymTab S, int offset) {
-        return 0;
+    public Sym processNames(SymTab S, int totalOffset) {
+        return null;
     }
-
+    
     /** typeCheck **/
     public void typeCheck() {
 	myBody.typeCheck(myType.type());
+    }
+
+    public int calcOffset(){
+        int offset = myFormalsList.calcOffset();
+        paramOffset = offset;
+        localsOffset = myBody.calcOffset();
+        offset += localsOffset;
+        return offset;
     }
 
     // ** unparse **
@@ -833,29 +892,29 @@ class FnDeclNode extends DeclNode {
         }
         Codegen.genPush(Codegen.RA, 4);
         Codegen.genPush(Codegen.FP, 4);
-        FnSym sym = (FnSym) myId.sym();
-        int paramOffset = sym.getParamOffset();
-        int localOffset = sym.getLocalOffset();
-        Codegen.generate("addu", Codegen.FP, Codegen.SP, (-1 * paramOffset) + 8);
-        if (sym.getLocalOffset() > 0){
-            Codegen.generate("subu", Codegen.SP, Codegen.SP, (-1 * localOffset));
-            System.out.println("locals ");
+        Codegen.generate("addu", Codegen.FP, Codegen.SP, paramOffset + 8);
+        if (localsOffset > 0){
+            Codegen.generate("subu", Codegen.SP, Codegen.SP, localsOffset);
+            System.out.println("locals " + localsOffset);
         }
         String prologue = Codegen.nextLabel();
         myBody.codeGen();
         Codegen.generateLabeled(prologue, "", "FUNCTION EXIT", "");
-        Codegen.generateIndexed("lw", Codegen.RA, Codegen.FP, paramOffset, "load return address");
+        Codegen.generateIndexed("lw", Codegen.RA, Codegen.FP, -(paramOffset), "load return address");
         Codegen.generateWithComment("move", "save control link", Codegen.T0, Codegen.FP);
-        Codegen.generateIndexed("lw", Codegen.FP, Codegen.FP, (paramOffset - 4), "restore FP");
+        Codegen.generateIndexed("lw", Codegen.FP, Codegen.FP, -(paramOffset + 4), "restore FP");
         Codegen.generateWithComment("move", "restore SP", Codegen.SP, Codegen.T0);
         Codegen.generateWithComment("jr", "return", Codegen.RA);
     }
+
     
     // 4 kids
     private TypeNode myType;
     private IdNode myId;
     private FormalsListNode myFormalsList;
     private FnBodyNode myBody;
+    private int paramOffset;
+    private int localsOffset;   
 }
 
 class FormalDeclNode extends DeclNode {
@@ -902,14 +961,19 @@ class FormalDeclNode extends DeclNode {
 	return sym;
     }
 
-    public int processNames(SymTab S, int offset) {
-        return 0;
-    }
-    
     public Sym processNames(SymTab S, String status) {
         return null;
     }
     
+    public Sym processNames(SymTab S, int totalOffset) {
+        return null;
+    }
+    
+    
+    public int calcOffset(){
+    	return myId.calcOffset();
+    }
+
     // ** unparse **
     public void unparse(PrintWriter p, int indent) {
 	doIndent(p, indent);
@@ -917,9 +981,9 @@ class FormalDeclNode extends DeclNode {
 	p.print(" ");
 	myId.unparse(p, indent);
     }
-
-    public void codeGen(){}
     
+    public void codeGen(){}
+
     // 2 kids
     private TypeNode myType;
     private IdNode myId;
@@ -1008,7 +1072,9 @@ class AssignStmtNode extends StmtNode {
     }
 
     public void codeGen(){
-        
+        myExp.codeGen();
+        int varSize = myExp.sizeOfVar();
+        Codegen.genPop(Codegen.T0, varSize);
     }
     
     // 1 kid
@@ -1263,14 +1329,14 @@ class WriteDblStmtNode extends StmtNode {
 	myExp.unparse(p,0);
 	p.println(");");
     }
-
+    
     public void codeGen(){
         myExp.codeGen();
         Codegen.genPop(Codegen.F12, 8);
         Codegen.generate("li", Codegen.V0, 3);
         Codegen.generate("syscall");
     }
-    
+
     // 1 kid
     private ExpNode myExp;
 }
@@ -1596,11 +1662,10 @@ class ReturnStmtNode extends StmtNode {
 abstract class ExpNode extends ASTnode {
     // default version of processNames (for nodes with no names)
     public void processNames(SymTab S) {}
-
+    abstract public void codeGen();
     abstract public String typeCheck();
     abstract public int linenum();
     abstract public int charnum();
-    abstract public void codeGen();
     
     public int sizeOfVar(){
         if (typeCheck().equals("double")) return 8;
@@ -1672,13 +1737,13 @@ class DblLitNode extends ExpNode {
     public int charnum() {
 	return myCharNum;
     }
-
+    
     public void codeGen(){
         String s = "" + myDblVal;
         Codegen.generate("li.d", Codegen.F0, s);
         Codegen.genPush(Codegen.F0, 8);
     }
-    
+
     private int myLineNum;
     private int myCharNum;
     private double myDblVal;
@@ -1766,11 +1831,7 @@ class IdNode extends ExpNode {
     // ** unparse **
     public void unparse(PrintWriter p, int indent) {
 	p.print(myStrVal);
-		if (mySym == null){
-			p.print("(void)");
-		} else{
-			p.print("(" + mySym.type() + ")");
-		}
+	p.print("(" + mySym.type() + ")");
     }
 
     /** name **/
@@ -1801,6 +1862,10 @@ class IdNode extends ExpNode {
     /** char num **/
     public int charnum() {
 	return myCharNum;
+    }
+
+    public int calcOffset(){
+	return mySym.getOffset();
     }
 
     public void codeGen(){
@@ -1836,6 +1901,7 @@ class IdNode extends ExpNode {
             Codegen.generateIndexed("la", Codegen.T0, Codegen.FP, -1 * mySym.getOffset());
         }
     }
+
     
     // fields
     private int myLineNum;
@@ -1905,11 +1971,11 @@ class CallExpNode extends ExpNode {
     public int charnum() {
 	return myId.charnum();
     }
-    
+
     public void codeGen(){
         
     }
-
+    
     // 2 kids
     private IdNode myId;
     private ExpListNode myExpList;
@@ -1935,7 +2001,6 @@ abstract class UnaryExpNode extends ExpNode {
 	return myExp.charnum();
     }
 
-    
     public void codeGen(){
         
     }
@@ -1965,11 +2030,11 @@ abstract class BinaryExpNode extends ExpNode {
     public int charnum() {
 	return myExp1.charnum();
     }
-
+    
     public void codeGen(){
         
     }
-    
+
     // two kids
     protected ExpNode myExp1;
     protected ExpNode myExp2;
@@ -2161,7 +2226,23 @@ class AssignNode extends BinaryExpNode {
     }
     
     public void codeGen(){
-        
+        myExp2.codeGen();                                   // put value on top of stack
+        Codegen.genPop(Codegen.T1, myExp2.sizeOfVar());
+        //Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());
+        if (((IdNode)myExp1).calcOffset() <= 0){
+            ((IdNode)myExp1).genAddr();
+            Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());
+        }    
+        else{
+            ((IdNode)myExp1).codeGen();
+            Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());
+        }    
+        if (myExp2.sizeOfVar() == 8){
+            Codegen.generateIndexed("s.d", Codegen.F0, Codegen.T0, 0);
+        }
+        else{
+            Codegen.generateIndexed("sw", Codegen.T1, Codegen.T0, 0);
+        }    
     }
 }
 
@@ -2345,6 +2426,7 @@ class EqualsNode extends EqualityBinExpNode {
 	myExp2.unparse(p, 0);
 	p.print(")");
     }
+    
     public void codeGen(){
         
     }
@@ -2363,6 +2445,7 @@ class NotEqualsNode extends EqualityBinExpNode {
 	myExp2.unparse(p, 0);
 	p.print(")");
     }
+    
     public void codeGen(){
         
     }

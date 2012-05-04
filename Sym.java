@@ -23,11 +23,11 @@ import java.util.*;
 
 class Sym {
     public Sym(String T) {
-	myType = T;
-	myComplete = true;
-	if (myType.equals("int")) this.offset = 4;
-	else if (myType.equals("double")) this.offset = 8;
-	else this.offset = 0;
+        myType = T;
+        myComplete = true;
+        if (myType.equals("int")) this.offset = 4;
+        else this.offset = 8;
+        global = false;
         FPoffset = 0;
     }
 
@@ -59,12 +59,21 @@ class Sym {
     public void setFPOffset(int o){
         this.FPoffset = o;
     }
+    
+    public boolean getGlobal(){
+        return this.global;
+    }
+    
+    public void setGlobal(){
+        this.global = true;
+    }
 
   // fields
     protected String myType;
     private boolean myComplete;
     private int offset;
     private int FPoffset;
+    private boolean global;
 }
 
 // **********************************************************************
@@ -108,11 +117,29 @@ class FnSym extends Sym {
     public LinkedList<String> paramTypes() {
 	return myParamTypes;
     }
+    
+    public void setParamOffset(int o){
+        this.paramOffset = o;
+    }
 
+    public void setLocalOffset(int o){
+        this.localOffset = o;
+    }
+    
+    public int getParamOffset(){
+        return this.paramOffset;
+    }
+    
+    public int getLocalOffset(){
+        return this.localOffset;
+    }
+    
     // new fields
     private String myReturnType;
     private int myNumParams;
     private LinkedList<String> myParamTypes;
+    private int localOffset;
+    private int paramOffset;
 }
 
 
