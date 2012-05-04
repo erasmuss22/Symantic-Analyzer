@@ -2385,9 +2385,13 @@ class MinusNode extends ArithmeticBinExpNode {
     }
     
     public void codeGen(){
-        myExp2.codeGen();
+        System.out.println(myExp1.getValue() + "addition");
+        myExp1.codeGen();
         Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
         myExp2.codeGen();
+        System.out.println(myExp2.getValue() + "addition");
+        Codegen.genPop(Codegen.T2, 4);
         Codegen.genPop(Codegen.T1, 4);
         Codegen.generate("sub", Codegen.T1, Codegen.T1, Codegen.T2);
         Codegen.genPush(Codegen.T1, 4);
