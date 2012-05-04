@@ -193,6 +193,8 @@ class ProgramNode extends ASTnode {
     }
 
     public void codeGen(){
+        Codegen.generate(".text");
+        Codegen.generate("b", "main");
         myDeclList.codeGen();
     }
     
@@ -314,16 +316,21 @@ class FormalsListNode extends ASTnode {
             if (myFormals != null){
                 Iterator it = myFormals.iterator();
                 try {
+                    paramOffset = 0;
+                    int paramFPOffset = 8;
                     while (it.hasNext()) {
-                        paramOffset = 0;
                         Sym sym = ((FormalDeclNode)it.next()).processNames(S);
                         if (sym != null){
                             if (sym.type().equals("int")){
                                 sym.setOffset(paramOffset);
+                                sym.setFPOffset(paramFPOffset);
+                                paramFPOffset += 4;
                                 paramOffset -= 4;
                             }
                             else {
                                 sym.setOffset(paramOffset);
+                                sym.setFPOffset(paramFPOffset);
+                                paramFPOffset += 8;
                                 paramOffset -= 8;
                             }
                         }
@@ -843,7 +850,7 @@ class FnDeclNode extends DeclNode {
             Codegen.generate(".globl main");
             Codegen.generateLabeled("main", "", "FUNCTION ENTRY", "");
         } else {
-            Codegen.genLabel("_" + myId.name());
+            Codegen.generateLabeled("_" + myId.name(), "", "FUNCTION ENTRY", "");
         }
         Codegen.genPush(Codegen.RA, 4);
         Codegen.genPush(Codegen.FP, 4);
@@ -1875,7 +1882,7 @@ class IdNode extends ExpNode {
             }
         }
         else{
-            if (mySym.getOffset() <= 0){
+            if (mySym.getGlobal()){
                 Codegen.generate("l.d", Codegen.F0, "_" + myStrVal);
             }
             else{
@@ -1913,6 +1920,7 @@ class IdNode extends ExpNode {
                 Codegen.genPush(Codegen.T0, 4);
             }
             else{
+                System.out.println("FPOffset: " + mySym.getFPOffset());
                 Codegen.generateIndexed("lw", Codegen.T0, Codegen.FP, mySym.getFPOffset() - 8);
                 Codegen.genPush(Codegen.T0, 4);
                 System.out.println("local idnode " + mySym.getFPOffset());

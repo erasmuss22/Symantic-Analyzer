@@ -3,6 +3,8 @@ void test(int y){
 }
 void main() {
    int x;
+   int y;
    x = 3;
-   test(x);
+   y = 4;
+   test(x + y);
 }
