@@ -1817,6 +1817,27 @@ class IdNode extends ExpNode {
                 Codegen.generate("lw", Codegen.T0, "_" + myStrVal);
             }
             else{
+                Codegen.generateIndexed("lw", Codegen.T1, Codegen.FP, mySym.getFPOffset() - 8);
+                Codegen.genPush(Codegen.T1, 4);
+                System.out.println("local idnode " + mySym.getFPOffset());
+            }
+        }
+        else{
+            if (mySym.getOffset() <= 0){
+                Codegen.generate("l.d", Codegen.F0, "_" + myStrVal);
+            }
+            else{
+                Codegen.generateIndexed("l.d", Codegen.F0, Codegen.FP, mySym.getFPOffset() - 8);
+            }
+        }
+    }
+    
+    public void assignVar(){
+        if (mySym.type().equals("int")){
+            if (mySym.getGlobal()){
+                Codegen.generate("lw", Codegen.T0, "_" + myStrVal);
+            }
+            else{
                 Codegen.generateIndexed("sw", Codegen.T1, Codegen.FP, mySym.getFPOffset() - 8);
                 System.out.println("local idnode " + mySym.getFPOffset());
             }
@@ -2199,7 +2220,7 @@ class AssignNode extends BinaryExpNode {
         }    
         else{
             System.out.println("local not global");
-            ((IdNode)myExp1).codeGen();
+            ((IdNode)myExp1).assignVar();
             //Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());
         }    
     }

@@ -5,6 +5,8 @@ void main() {
    x = 3;
    y = 4;
    z = 7;
+   z = y;
+   x = z;
    printf("%d", x);
    printf("%d", z);
    printf("%d", y);

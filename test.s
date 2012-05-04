@@ -37,6 +37,26 @@ main:		# FUNCTION ENTRY
 	sw      $t1, -20($fp)
 	lw      $t0, 4($sp)	#POP
 	addu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -20($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
 	lw      $t0, -8($fp)
 	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
