@@ -1815,7 +1815,8 @@ class IdNode extends ExpNode {
     public void codeGen(){
         if (mySym.type().equals("int")){
             if (mySym.getGlobal()){
-                Codegen.generate("lw", Codegen.T0, "_" + myStrVal);
+                Codegen.generate("lw", Codegen.T1, "_" + myStrVal);
+                Codegen.genPush(Codegen.T1, 4);
             }
             else{
                 Codegen.generateIndexed("lw", Codegen.T1, Codegen.FP, mySym.getFPOffset() - 8);
@@ -1836,7 +1837,8 @@ class IdNode extends ExpNode {
     public void assignVar(){
         if (mySym.type().equals("int")){
             if (mySym.getGlobal()){
-                Codegen.generate("lw", Codegen.T0, "_" + myStrVal);
+                Codegen.genPush(Codegen.T1, 4);
+                Codegen.generate("sw", Codegen.T1, "_" + myStrVal);
             }
             else{
                 Codegen.genPush(Codegen.T1, 4);
@@ -1858,6 +1860,7 @@ class IdNode extends ExpNode {
         if (mySym.type().equals("int")){
             if (mySym.getGlobal()){
                 Codegen.generate("lw", Codegen.T0, "_" + myStrVal);
+                Codegen.genPush(Codegen.T0, 4);
             }
             else{
                 Codegen.generateIndexed("lw", Codegen.T0, Codegen.FP, mySym.getFPOffset() - 8);
@@ -1881,8 +1884,10 @@ class IdNode extends ExpNode {
     }
     
     public void genAddr(){
-        if (mySym.getOffset() > 0){
+        if (mySym.getGlobal()){
             Codegen.generate("la", Codegen.T0, "_" + myStrVal);
+            Codegen.generate("sw", Codegen.T1, "0(" + Codegen.T0 + ")");
+            
         }
         else{
             Codegen.generateIndexed("la", Codegen.T0, Codegen.FP, -1 * mySym.getOffset());
@@ -2227,7 +2232,7 @@ class AssignNode extends BinaryExpNode {
         Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());    // value in T1 and on TOS
         if (((IdNode)myExp1).sym().getGlobal()){
             ((IdNode)myExp1).genAddr();
-            Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());
+            //Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());
         }    
         else{
             System.out.println("local not global");

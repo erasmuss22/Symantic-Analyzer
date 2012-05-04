@@ -1,12 +1,8 @@
+int x;
 void main() {
-   int x;
    int y;
-   int z;
    x = 10;
+   y = x--;
    printf("%d", x);
-   y = x++;
    printf("%d", y);
-   printf("%d", x);
-   z = x--;
-   printf("%d", z);
 }
