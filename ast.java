@@ -1105,6 +1105,23 @@ class PreIncStmtNode extends StmtNode {
 	p.println(";");
     }
 
+    public void codeGen(){
+        System.out.println("plus plus");
+        myId.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.generate("addi", Codegen.T1, Codegen.T2, "1");
+        myId.assignVar();
+    }
+    
+    
+    public void codeGen(String prologue){
+        System.out.println("plus plus");
+        myId.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.generate("addi", Codegen.T1, Codegen.T2, "1");
+        myId.assignVar();
+    }
+    
     // 1 kid
     private IdNode myId;
 }
@@ -1135,6 +1152,21 @@ class PreDecStmtNode extends StmtNode {
 	p.print("--");
 	myId.unparse(p,0);
 	p.println(";");
+    }
+    
+    public void codeGen(){
+        System.out.println("minus minus");
+        myId.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.generate("sub", Codegen.T1, Codegen.T1, "1");
+        myId.assignVar();
+    }
+    public void codeGen(String prologue){
+        System.out.println("minus minus");
+        myId.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.generate("sub", Codegen.T1, Codegen.T1, "1");
+        myId.assignVar();
     }
 
     // 1 kid
@@ -1167,7 +1199,27 @@ class PostIncStmtNode extends StmtNode {
 	myId.unparse(p,0);
 	p.println("++;");
     }
+    
 
+    public void codeGen(){
+        System.out.println("plus plus");
+        myId.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.generate("addi", Codegen.T1, Codegen.T2, "1");
+        myId.assignVar();
+        Codegen.genPush(Codegen.T2, 4);
+    }
+    
+    
+    public void codeGen(String prologue){
+        System.out.println("plus plus");
+        myId.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.generate("addi", Codegen.T1, Codegen.T2, "1");
+        myId.assignVar();
+        Codegen.genPush(Codegen.T2, 4);
+    }
+    
     // 1 kid
     private IdNode myId;
 }
@@ -1197,6 +1249,23 @@ class PostDecStmtNode extends StmtNode {
     public void unparse(PrintWriter p, int indent) {
 	myId.unparse(p,0);
 	p.println("--;");
+    }
+    
+    public void codeGen(){
+        System.out.println("minus minus");
+        myId.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.generate("sub", Codegen.T1, Codegen.T1, "1");
+        myId.assignVar();
+        Codegen.genPush(Codegen.T2, 4);
+    }
+    public void codeGen(String prologue){
+        System.out.println("minus minus");
+        myId.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.generate("sub", Codegen.T1, Codegen.T1, "1");
+        myId.assignVar();
+        Codegen.genPush(Codegen.T2, 4);
     }
 
     // 1 kid
@@ -1229,6 +1298,14 @@ class ReadIntStmtNode extends StmtNode {
 	p.println(");");
     }
 
+    public void codeGen(String prologue){
+        Codegen.generate("li", Codegen.V0, 5);
+        Codegen.generate("syscall");
+        Codegen.genPush(Codegen.V0, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        myId.assignVar();
+    }
+    
     // 1 kid
     private IdNode myId;
 }
@@ -2254,9 +2331,10 @@ class PlusPlusNode extends UnaryExpNode {
     public void codeGen(){
         System.out.println("plus plus");
         myExp.codeGen();
-        Codegen.genPop(Codegen.T1, 4);
-        Codegen.generate("add", Codegen.T1, Codegen.T1, "1");
-        Codegen.genPush(Codegen.T1, 4);
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.generate("addi", Codegen.T1, Codegen.T2, "1");
+        myExp.assignVar();
+        Codegen.genPush(Codegen.T2, 4);
     }
     
     public void genJumpCode(String trueLab, String doneLab){
@@ -2293,9 +2371,10 @@ class MinusMinusNode extends UnaryExpNode {
     public void codeGen(){
         System.out.println("minus minus");
         myExp.codeGen();
-        Codegen.genPop(Codegen.T1, 4);
+        Codegen.genPop(Codegen.T2, 4);
         Codegen.generate("sub", Codegen.T1, Codegen.T1, "1");
-        Codegen.genPush(Codegen.T1, 4);
+        myExp.assignVar();
+        Codegen.genPush(Codegen.T2, 4);
     }
     
     public void genJumpCode(String trueLab, String doneLab){
@@ -2327,7 +2406,12 @@ class UnaryMinusNode extends UnaryExpNode {
     }
     
     public void codeGen(){
-        
+        System.out.println("minus minus");
+        myExp.codeGen();
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("mult", Codegen.T1, "-1");
+        Codegen.generate("mflo", Codegen.T1);
+        Codegen.genPush(Codegen.T1, 4);
     }
 }
 

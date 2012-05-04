@@ -1,12 +1,8 @@
-int test(int a, int b){
-   a = 8;
-   return a;
-}
 void main() {
    int x;
    int y;
-   x = 3;
-   y = 5;
-   x = test(x, y - x);
+   scanf("%d", &x);
+   --x;
+   printf("%d", y);
    printf("%d", x);
 }
