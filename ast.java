@@ -2167,7 +2167,7 @@ class NotNode extends UnaryExpNode {
         System.out.println("not");
         myExp.codeGen();
         Codegen.genPop(Codegen.T1, 4);
-        Codegen.generate("add", Codegen.T1, Codegen.T1, "1");
+        Codegen.generate("not", Codegen.T1, Codegen.T1);
         Codegen.genPush(Codegen.T1, 4);
     }
 }

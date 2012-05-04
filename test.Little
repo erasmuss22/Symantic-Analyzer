@@ -1,9 +1,10 @@
 void main() {
    int y;
    int x;
-   x = 10;
+   x = 0;
    y = x--;
-   x = 2 + x / 2 * y;
+   x = !x;
+   y = !y;
    printf("%d", x);
    printf("%d", y);
 }

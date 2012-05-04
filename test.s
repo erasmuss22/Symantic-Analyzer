@@ -7,7 +7,7 @@ main:		# FUNCTION ENTRY
 	subu    $sp, $sp, 4
 	addu    $fp, $sp, 8
 	subu    $sp, $sp, 12
-	li      $t0, 10
+	li      $t0, 0
 	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $t1, 4($sp)	#POP
@@ -36,51 +36,12 @@ main:		# FUNCTION ENTRY
 	sw      $t1, -8($fp)
 	lw      $t0, 4($sp)	#POP
 	addu    $sp, $sp, 4
-	li      $t0, 2
-	sw      $t0, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	lw      $t2, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	sw      $t2, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
 	lw      $t1, -12($fp)
 	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
-	lw      $t2, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	sw      $t2, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	li      $t0, 2
-	sw      $t0, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	lw      $t2, 4($sp)	#POP
-	addu    $sp, $sp, 4
 	lw      $t1, 4($sp)	#POP
 	addu    $sp, $sp, 4
-	div     $t1, $t2
-	mflo    $t1
-	sw      $t1, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	lw      $t2, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	sw      $t2, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	lw      $t1, -8($fp)
-	sw      $t1, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	lw      $t2, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	lw      $t1, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	mult    $t1, $t2
-	mflo    $t1
-	sw      $t1, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	lw      $t2, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	lw      $t1, 4($sp)	#POP
-	addu    $sp, $sp, 4
-	add     $t1, $t1, $t2
+	not     $t1, $t1
 	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $t1, 4($sp)	#POP
@@ -90,6 +51,23 @@ main:		# FUNCTION ENTRY
 	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	sw      $t1, -12($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	not     $t1, $t1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
 	lw      $t0, 4($sp)	#POP
 	addu    $sp, $sp, 4
 	lw      $t0, -12($fp)
