@@ -3,7 +3,7 @@ void main() {
    int x;
    x = 3;
    y = 2;
-   x = x >= y;
+   x = x == 1 || y == 2;
    y = y <= 3;
    printf("%d", x);
    printf("%d", y);

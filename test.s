@@ -38,14 +38,42 @@ main:		# FUNCTION ENTRY
 	addu    $sp, $sp, 4
 	sw      $t2, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	seq     $t1, $t1, $t2
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
 	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	li      $t0, 2
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	seq     $t1, $t1, $t2
 	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $t2, 4($sp)	#POP
 	addu    $sp, $sp, 4
 	lw      $t1, 4($sp)	#POP
 	addu    $sp, $sp, 4
-	sge     $t1, $t1, $t2
+	or      $t1, $t1, $t2
 	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $t1, 4($sp)	#POP

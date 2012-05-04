@@ -2641,9 +2641,20 @@ class AndNode extends LogicalBinExpNode {
 	p.print(")");
     }
     
+    
     public void codeGen(){
-        
+        System.out.println(myExp1.getValue() + "AND");
+        myExp1.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        myExp2.codeGen();
+        System.out.println(myExp2.getValue() + "AND");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("and", Codegen.T1, Codegen.T1, Codegen.T2);
+        Codegen.genPush(Codegen.T1, 4);
     }
+    
 }
 
 class OrNode extends LogicalBinExpNode {
@@ -2661,7 +2672,16 @@ class OrNode extends LogicalBinExpNode {
     }
     
     public void codeGen(){
-        
+        System.out.println(myExp1.getValue() + "OR");
+        myExp1.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        myExp2.codeGen();
+        System.out.println(myExp2.getValue() + "OR");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("or", Codegen.T1, Codegen.T1, Codegen.T2);
+        Codegen.genPush(Codegen.T1, 4);
     }
 }
 
