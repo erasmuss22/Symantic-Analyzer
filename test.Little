@@ -1,14 +1,9 @@
 void main() {
    int x;
    x = 0;
-   if (x) {
-      printf("then");
+   while (x < 3){
+	printf("%d", x);
+	x = x + 1;
    }
-   else{
-	printf("else");
-	if (x == 0){
-		printf("then2");
-	}
-   }
-   printf("%d", 12);
+   printf("%d", 67);
 }

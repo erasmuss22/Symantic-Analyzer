@@ -1511,8 +1511,16 @@ class WhileStmtNode extends StmtNode {
 	p.println("}");
     }
 
-    public void codeGen(){
-        
+    public void codeGen() {
+        String whileLab = Codegen.nextLabel();
+        String trueLab = Codegen.nextLabel();
+        String doneLab = Codegen.nextLabel();
+        Codegen.genLabel(whileLab);
+        myExp.genJumpCode(trueLab, doneLab);
+        Codegen.genLabel(trueLab);
+        myStmtList.codeGen();
+        Codegen.generate("b", whileLab);
+        Codegen.genLabel(doneLab);
     }
     
     // 3 kids

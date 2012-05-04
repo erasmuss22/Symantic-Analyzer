@@ -19,33 +19,32 @@ main:		# FUNCTION ENTRY
 	sw      $t1, -8($fp)
 	lw      $t0, 4($sp)	#POP
 	addu    $sp, $sp, 4
-	lw      $t0, -8($fp)
-	beqz    $t0, .L2
-	b       .L1
 .L1:
-				#WRITE STR
-	.data
-.L4:	.asciiz "then"
-	.text
-	la      $t0, .L4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	li      $t0, 3
 	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
-	lw      $a0, 4($sp)	#POP
+	lw      $t2, 4($sp)	#POP
 	addu    $sp, $sp, 4
-	li      $v0, 4
-	syscall
-	b       .L3
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	bge     $t1, $t2, .L3
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	b       .L2
 .L2:
-				#WRITE STR
-	.data
-.L5:	.asciiz "else"
-	.text
-	la      $t0, .L5
+	lw      $t0, -8($fp)
 	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $a0, 4($sp)	#POP
 	addu    $sp, $sp, 4
-	li      $v0, 4
+	li      $v0, 1
 	syscall
 	lw      $t1, -8($fp)
 	sw      $t1, 0($sp)	#PUSH
@@ -54,32 +53,28 @@ main:		# FUNCTION ENTRY
 	addu    $sp, $sp, 4
 	sw      $t2, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
-	li      $t0, 0
+	li      $t0, 1
 	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $t2, 4($sp)	#POP
 	addu    $sp, $sp, 4
 	lw      $t1, 4($sp)	#POP
 	addu    $sp, $sp, 4
-	bne     $t1, $t2, .L7
+	add     $t1, $t1, $t2
 	sw      $t1, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
-	b       .L6
-.L6:
-				#WRITE STR
-	.data
-.L8:	.asciiz "then2"
-	.text
-	la      $t0, .L8
-	sw      $t0, 0($sp)	#PUSH
-	subu    $sp, $sp, 4
-	lw      $a0, 4($sp)	#POP
+	lw      $t1, 4($sp)	#POP
 	addu    $sp, $sp, 4
-	li      $v0, 4
-	syscall
-.L7:
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	b       .L1
 .L3:
-	li      $t0, 12
+	li      $t0, 67
 	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $a0, 4($sp)	#POP
