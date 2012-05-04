@@ -1605,6 +1605,7 @@ abstract class ExpNode extends ASTnode {
     abstract public void codeGen();
     public void codeInt(){}
     public void assignVar(){}
+    public int getValue(){return 0;}
     public int sizeOfVar(){
         if (typeCheck().equals("double")) return 8;
         else return 4;
@@ -1648,6 +1649,10 @@ class IntLitNode extends ExpNode {
         String s = "" + myIntVal;
         Codegen.generate("li", Codegen.T0, s);
         Codegen.genPush(Codegen.T0, 4);
+    }
+    
+    public int getValue(){
+        return myIntVal;
     }
     
     private int myLineNum;
@@ -2159,7 +2164,11 @@ class NotNode extends UnaryExpNode {
     }
     
     public void codeGen(){
-        
+        System.out.println("not");
+        myExp.codeGen();
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("add", Codegen.T1, Codegen.T1, "1");
+        Codegen.genPush(Codegen.T1, 4);
     }
 }
 
@@ -2348,7 +2357,16 @@ class PlusNode extends ArithmeticBinExpNode {
     }
     
     public void codeGen(){
-        
+        System.out.println(myExp1.getValue() + "addition");
+        myExp1.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPush(Codegen.T2, 4);
+        myExp2.codeGen();
+        System.out.println(myExp2.getValue() + "addition");
+        Codegen.genPop(Codegen.T2, 4);
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("add", Codegen.T1, Codegen.T1, Codegen.T2);
+        Codegen.genPush(Codegen.T1, 4);
     }
 }
 
@@ -2367,7 +2385,12 @@ class MinusNode extends ArithmeticBinExpNode {
     }
     
     public void codeGen(){
-        
+        myExp2.codeGen();
+        Codegen.genPop(Codegen.T2, 4);
+        myExp2.codeGen();
+        Codegen.genPop(Codegen.T1, 4);
+        Codegen.generate("sub", Codegen.T1, Codegen.T1, Codegen.T2);
+        Codegen.genPush(Codegen.T1, 4);
     }
 }
 
