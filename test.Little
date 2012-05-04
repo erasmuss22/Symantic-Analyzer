@@ -1,10 +1,14 @@
-void test(int y){
+void test(int y, int k, int j){
    printf("%d", y);
+   printf("%d", k);
+   printf("%d", j);
 }
 void main() {
    int x;
    int y;
+   int w;
    x = 3;
    y = 4;
-   test(x + y);
+   w = 6;
+   test(x, w + y, x + y + w);
 }

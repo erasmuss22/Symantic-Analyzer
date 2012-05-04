@@ -324,13 +324,13 @@ class FormalsListNode extends ASTnode {
                             if (sym.type().equals("int")){
                                 sym.setOffset(paramOffset);
                                 sym.setFPOffset(paramFPOffset);
-                                paramFPOffset += 4;
+                                paramFPOffset -= 4;
                                 paramOffset -= 4;
                             }
                             else {
                                 sym.setOffset(paramOffset);
                                 sym.setFPOffset(paramFPOffset);
-                                paramFPOffset += 8;
+                                paramFPOffset -= 8;
                                 paramOffset -= 8;
                             }
                         }
