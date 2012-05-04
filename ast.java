@@ -1358,8 +1358,13 @@ class IfStmtNode extends StmtNode {
 	p.println("}");
     }
 
-    public void codeGen(){
-        
+    public void codeGen() {
+        String trueLab = Codegen.nextLabel();
+        String doneLab = Codegen.nextLabel();
+        myExp.genJumpCode(trueLab, doneLab);
+        Codegen.genLabel(trueLab);
+        myStmtList.codeGen();
+        Codegen.genLabel(doneLab);
     }
     
     // 3 kids
@@ -1606,6 +1611,7 @@ abstract class ExpNode extends ASTnode {
     public void codeInt(){}
     public void assignVar(){}
     public int getValue(){return 0;}
+    public void genJumpCode(String trueLab, String doneLab){}
     public int sizeOfVar(){
         if (typeCheck().equals("double")) return 8;
         else return 4;
@@ -1649,6 +1655,12 @@ class IntLitNode extends ExpNode {
         String s = "" + myIntVal;
         Codegen.generate("li", Codegen.T0, s);
         Codegen.genPush(Codegen.T0, 4);
+    }
+    
+    public void genJumpCode(String trueLab, String doneLab){
+            Codegen.generate("li", Codegen.T0, "" + myIntVal);
+            Codegen.generate("beqz", Codegen.T0, doneLab);
+            Codegen.generate("b", trueLab);
     }
     
     public int getValue(){
@@ -1896,6 +1908,20 @@ class IdNode extends ExpNode {
         }
         else{
             Codegen.generateIndexed("la", Codegen.T0, Codegen.FP, -1 * mySym.getOffset());
+        }
+    }
+    
+    
+    public void genJumpCode(String trueLab, String doneLab){
+        if (mySym.getGlobal()){
+            Codegen.generate("lw", Codegen.T0, "_" + myStrVal);
+            Codegen.generate("beqz", Codegen.T0, doneLab);
+            Codegen.generate("b", trueLab);
+        }
+        else {
+            Codegen.generateIndexed("lw", Codegen.T0, Codegen.FP, mySym.getFPOffset() - 8);
+            Codegen.generate("beqz", Codegen.T0, doneLab);
+            Codegen.generate("b", trueLab);
         }
     }
     
