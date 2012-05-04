@@ -837,7 +837,7 @@ class FnDeclNode extends DeclNode {
         int paramOffset = sym.getParamOffset();
         int localOffset = sym.getLocalOffset();
         Codegen.generate("addu", Codegen.FP, Codegen.SP, (-1 * paramOffset) + 8);
-        if (sym.getLocalOffset() > 0){
+        if (sym.getLocalOffset() < 0){
             Codegen.generate("subu", Codegen.SP, Codegen.SP, (-1 * localOffset));
             System.out.println("locals ");
         }
@@ -1008,7 +1008,9 @@ class AssignStmtNode extends StmtNode {
     }
 
     public void codeGen(){
-        
+        myExp.codeGen();
+        int varSize = myExp.sizeOfVar();
+        Codegen.genPop(Codegen.T0, varSize);
     }
     
     // 1 kid
@@ -1805,12 +1807,12 @@ class IdNode extends ExpNode {
 
     public void codeGen(){
         if (mySym.type().equals("int")){
-            if (mySym.getOffset() <= 0){
+            if (mySym.getGlobal()){
                 Codegen.generate("lw", Codegen.T0, "_" + myStrVal);
             }
             else{
-                Codegen.generateIndexed("sw", Codegen.T1, Codegen.FP, mySym.getFPOffset());
-                System.out.println("local idnode");
+                Codegen.generateIndexed("sw", Codegen.T1, Codegen.FP, mySym.getFPOffset() - 8);
+                System.out.println("local idnode " + mySym.getFPOffset());
             }
         }
         else{
@@ -1818,7 +1820,7 @@ class IdNode extends ExpNode {
                 Codegen.generate("l.d", Codegen.F0, "_" + myStrVal);
             }
             else{
-                Codegen.generateIndexed("l.d", Codegen.F0, Codegen.FP, -1 * mySym.getFPOffset());
+                Codegen.generateIndexed("l.d", Codegen.F0, Codegen.FP, mySym.getFPOffset() - 8);
             }
         }
     }
@@ -2161,7 +2163,24 @@ class AssignNode extends BinaryExpNode {
     }
     
     public void codeGen(){
-        
+        myExp2.codeGen();                                   // put value on top of stack
+        Codegen.genPop(Codegen.T1, myExp2.sizeOfVar());
+        Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());    // value in T1 and on TOS
+        if (((IdNode)myExp1).sym().getGlobal()){
+            ((IdNode)myExp1).genAddr();
+            Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());
+        }    
+        else{
+            System.out.println("local not global");
+            ((IdNode)myExp1).codeGen();
+            Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());
+        }    
+        if (myExp2.sizeOfVar() == 8){
+            Codegen.generateIndexed("s.d", Codegen.F0, Codegen.T0, 0);
+        }
+        else{
+            Codegen.generateIndexed("sw", Codegen.T1, Codegen.T0, 0);
+        } 
     }
 }
 

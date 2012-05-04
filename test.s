@@ -6,16 +6,24 @@ main:		# FUNCTION ENTRY
 	sw      $fp, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	addu    $fp, $sp, 8
-				#WRITE STR
-	.data
-.L1:	.asciiz "Hello World!\n"
-	.text
-	la      $t0, .L1
+	subu    $sp, $sp, 4
+	li      $t0, 3
 	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($t0)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, -8($fp)
 	lw      $a0, 4($sp)	#POP
 	addu    $sp, $sp, 4
-	li      $v0, 4
+	li      $v0, 1
 	syscall
 .L0:		# FUNCTION EXIT
 	lw      $ra, 0($fp)	#load return address
