@@ -1629,7 +1629,11 @@ class ReturnStmtNode extends StmtNode {
     }
 
     public void codeGen(){
-        
+        if (myExp != null){
+            myExp.codeGen();
+            Codegen.genPop(Codegen.T1, 4);
+            Codegen.generate("sw", Codegen.T1, "0("+Codegen.V0+")");
+        }
     }
     
     // 1 kid

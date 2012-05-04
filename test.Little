@@ -1,14 +1,13 @@
-void test(int y, int k, int j){
-   printf("%d", y);
-   printf("%d", k);
-   printf("%d", j);
+void test(int a, int b){
+   printf("%d", a);
+   printf("%d", b);
+   return;
 }
 void main() {
    int x;
    int y;
-   int w;
    x = 3;
-   y = 4;
-   w = 6;
-   test(x, w + y, x + y + w);
+   y = 5;
+   test(x + y, y - x);
+   printf("%d", x);
 }
