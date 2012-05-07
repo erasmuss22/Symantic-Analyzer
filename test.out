@@ -1,17 +1,2530 @@
 	.text
-	.globl main
-main:
+	b       main		#Branch so program starts at main
+	.text
+_newline:		# FUNCTION ENTRY
+	sw      $ra, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $fp, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	addu    $fp, $sp, 12
+	subu    $sp, $sp, 4
+	li      $t0, 0
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+.L1:
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 0($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	bge     $t1, $t2, .L3	#check if less than
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	b       .L2
+.L2:
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	addi    $t1, $t2, 1	#increase by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L4:	.asciiz "\n"
+	.text
+	la      $t0, .L4
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	b       .L1		#check while condition
+.L3:
+.L0:		# FUNCTION EXIT
+	lw      $ra, -4($fp)	#load return address
+	move    $t0, $fp	#save control link
+	lw      $fp, -8($fp)	#restore FP
+	move    $sp, $t0	#restore SP
+	jr      $ra		#return
+	.text
+_printx:		# FUNCTION ENTRY
+	sw      $ra, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $fp, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	addu    $fp, $sp, 12
+				#WRITE STR
+	.data
+.L6:	.asciiz "x="
+	.text
+	la      $t0, .L6
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t0, 0($fp)
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+.L5:		# FUNCTION EXIT
+	lw      $ra, -4($fp)	#load return address
+	move    $t0, $fp	#save control link
+	lw      $fp, -8($fp)	#restore FP
+	move    $sp, $t0	#restore SP
+	jr      $ra		#return
+	.text
+_printfoo:		# FUNCTION ENTRY
+	sw      $ra, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $fp, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	addu    $fp, $sp, 16
+				#WRITE STR
+	.data
+.L8:	.asciiz "foo="
+	.text
+	la      $t0, .L8
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	l.d     $f0, 0($fp)
+	l.d     $f12, 4($sp)	#POP
+	addu    $sp, $sp, 8
+	li      $v0, 3
+	syscall
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+.L7:		# FUNCTION EXIT
+	lw      $ra, -8($fp)	#load return address
+	move    $t0, $fp	#save control link
+	lw      $fp, -12($fp)	#restore FP
+	move    $sp, $t0	#restore SP
+	jr      $ra		#return
+	.text
+_printxyz:		# FUNCTION ENTRY
+	sw      $ra, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $fp, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	addu    $fp, $sp, 20
+				#WRITE STR
+	.data
+.L10:	.asciiz "x="
+	.text
+	la      $t0, .L10
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t0, 0($fp)
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+				#WRITE STR
+	.data
+.L11:	.asciiz ", y="
+	.text
+	la      $t0, .L11
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t0, -4($fp)
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+				#WRITE STR
+	.data
+.L12:	.asciiz ", z="
+	.text
+	la      $t0, .L12
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t0, -8($fp)
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+.L9:		# FUNCTION EXIT
+	lw      $ra, -12($fp)	#load return address
+	move    $t0, $fp	#save control link
+	lw      $fp, -16($fp)	#restore FP
+	move    $sp, $t0	#restore SP
+	jr      $ra		#return
+	.text
+_assignAndUnaryOps:		# FUNCTION ENTRY
 	sw      $ra, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	sw      $fp, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	addu    $fp, $sp, 8
-	sw      4, 0($sp)	#PUSH
+	subu    $sp, $sp, 28
+				#WRITE STR
+	.data
+.L14:	.asciiz "///////// assignment and unary operations ///////\n"
+	.text
+	la      $t0, .L14
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	li      $t0, 0
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $t0, 0
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -12($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $t0, 0
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -20($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	li      $t0, 3
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	mult    $t1, -1
+	mflo    $t1		#move from lo after multiplying
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	addi    $t1, $t2, 1	#increase by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -12($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	not     $t1, $t1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -20($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	not     $t1, $t1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -20($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	addi    $t1, $t2, 1	#increase by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sub     $t1, $t1, 1	#decrease by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+.L13:		# FUNCTION EXIT
+	lw      $ra, 0($fp)	#load return address
+	move    $t0, $fp	#save control link
+	lw      $fp, -4($fp)	#restore FP
+	move    $sp, $t0	#restore SP
+	jr      $ra		#return
+	.text
+_arithmeticOps:		# FUNCTION ENTRY
+	sw      $ra, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $fp, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	addu    $fp, $sp, 8
+	subu    $sp, $sp, 28
+				#WRITE STR
+	.data
+.L16:	.asciiz "/////// ++, --, and arithmetic ////////\n"
+	.text
+	la      $t0, .L16
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $t0, 2
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -12($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $t0, 0
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -20($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	addi    $t1, $t2, 1	#increase by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	add     $t1, $t1, $t2	#perform addition
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -20($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L17:	.asciiz "z = x++ + y;"
+	.text
+	la      $t0, .L17
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	addi    $t1, $t2, 1	#increase by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sub     $t1, $t1, $t2	#generate subtraction
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -20($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L18:	.asciiz "z = x++ - y;"
+	.text
+	la      $t0, .L18
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	addi    $t1, $t2, 1	#increase by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sub     $t1, $t1, 1	#decrease by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -12($fp)
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sub     $t1, $t1, $t2	#generate subtraction
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -20($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L19:	.asciiz "z = x++ - y--;"
+	.text
+	la      $t0, .L19
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	addi    $t1, $t2, 1	#increase by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	addi    $t1, $t2, 1	#increase by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -12($fp)
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	add     $t1, $t1, $t2	#perform addition
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	mult    perform multiplication, $t1, $t2
+	mflo    $t1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -20($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L20:	.asciiz "z = x++ * (y++ + 1);"
+	.text
+	la      $t0, .L20
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	addi    $t1, $t2, 1	#increase by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	div     perform division, $t1, $t2
+	mflo    $t1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -20($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L21:	.asciiz "z = x++ / y;"
+	.text
+	la      $t0, .L21
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+.L15:		# FUNCTION EXIT
+	lw      $ra, 0($fp)	#load return address
+	move    $t0, $fp	#save control link
+	lw      $fp, -4($fp)	#restore FP
+	move    $sp, $t0	#restore SP
+	jr      $ra		#return
+	.text
+_comparisonOps:		# FUNCTION ENTRY
+	sw      $ra, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $fp, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	addu    $fp, $sp, 8
+	subu    $sp, $sp, 28
+				#WRITE STR
+	.data
+.L23:	.asciiz "////// comparison ops //////////\n"
+	.text
+	la      $t0, .L23
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $t0, 2
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -12($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -20($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L24:	.asciiz "x == y: "
+	.text
+	la      $t0, .L24
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L25:	.asciiz "x == z: "
+	.text
+	la      $t0, .L25
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L26:	.asciiz "x != y: "
+	.text
+	la      $t0, .L26
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L27:	.asciiz "x != z: "
+	.text
+	la      $t0, .L27
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L28:	.asciiz "!(x != z): "
+	.text
+	la      $t0, .L28
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L29:	.asciiz "x < y: "
+	.text
+	la      $t0, .L29
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L30:	.asciiz "x < z: "
+	.text
+	la      $t0, .L30
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L31:	.asciiz "y > x: "
+	.text
+	la      $t0, .L31
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L32:	.asciiz "x > z: "
+	.text
+	la      $t0, .L32
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L33:	.asciiz "x <= z: "
+	.text
+	la      $t0, .L33
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L34:	.asciiz "y <= x: "
+	.text
+	la      $t0, .L34
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L35:	.asciiz "z >= x: "
+	.text
+	la      $t0, .L35
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L36:	.asciiz "x >= y: "
+	.text
+	la      $t0, .L36
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+.L22:		# FUNCTION EXIT
+	lw      $ra, 0($fp)	#load return address
+	move    $t0, $fp	#save control link
+	lw      $fp, -4($fp)	#restore FP
+	move    $sp, $t0	#restore SP
+	jr      $ra		#return
+	.text
+_simpleStatements:		# FUNCTION ENTRY
+	sw      $ra, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $fp, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	addu    $fp, $sp, 8
+	subu    $sp, $sp, 16
+				#WRITE STR
+	.data
+.L38:	.asciiz "////// stmts other than call/return //////////\n"
+	.text
+	la      $t0, .L38
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	li      $t0, 2
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printx		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	addi    $t1, $t2, 1	#increase by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L39:	.asciiz "x++; "
+	.text
+	la      $t0, .L39
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printx		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sub     $t1, $t1, 1	#decrease by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L40:	.asciiz "x--; "
+	.text
+	la      $t0, .L40
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printx		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	addi    $t1, $t2, 1	#increase by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+				#WRITE STR
+	.data
+.L41:	.asciiz "++x; "
+	.text
+	la      $t0, .L41
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printx		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sub     $t1, $t1, 1	#decrease by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+				#WRITE STR
+	.data
+.L42:	.asciiz "--x; "
+	.text
+	la      $t0, .L42
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printx		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	li      $v0, 5
+	syscall			#read in Integer
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+				#WRITE STR
+	.data
+.L43:	.asciiz "scanf(\"%d\", &x); "
+	.text
+	la      $t0, .L43
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printx		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L44:	.asciiz "scanf(\"%f\", &foo); "
+	.text
+	la      $t0, .L44
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	l.d     $f0, -12($fp)
+	jal     _printfoo		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+.L37:		# FUNCTION EXIT
+	lw      $ra, 0($fp)	#load return address
+	move    $t0, $fp	#save control link
+	lw      $fp, -4($fp)	#restore FP
+	move    $sp, $t0	#restore SP
+	jr      $ra		#return
+	.text
+_logicalOps:		# FUNCTION ENTRY
+	sw      $ra, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $fp, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	addu    $fp, $sp, 8
+	subu    $sp, $sp, 28
+				#WRITE STR
+	.data
+.L46:	.asciiz "////// And and OR logical operators //////////\n"
+	.text
+	la      $t0, .L46
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -12($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $t0, 0
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -20($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L47:	.asciiz "x && y: "
+	.text
+	la      $t0, .L47
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L48:	.asciiz "z && x++: "
+	.text
+	la      $t0, .L48
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+				#WRITE STR
+	.data
+.L49:	.asciiz ", x="
+	.text
+	la      $t0, .L49
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t0, -8($fp)
+	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $a0, 4($sp)	#POP
 	addu    $sp, $sp, 4
 	li      $v0, 1
-	syscall
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L50:	.asciiz "x && z++: "
+	.text
+	la      $t0, .L50
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+				#WRITE STR
+	.data
+.L51:	.asciiz ", z="
+	.text
+	la      $t0, .L51
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t0, -20($fp)
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	li      $t0, 0
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $t0, 0
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -12($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -20($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L52:	.asciiz "x || y: "
+	.text
+	la      $t0, .L52
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L53:	.asciiz "z || x++: "
+	.text
+	la      $t0, .L53
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+				#WRITE STR
+	.data
+.L54:	.asciiz ", x="
+	.text
+	la      $t0, .L54
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t0, -8($fp)
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L55:	.asciiz "x || z++: "
+	.text
+	la      $t0, .L55
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+				#WRITE STR
+	.data
+.L56:	.asciiz ", z="
+	.text
+	la      $t0, .L56
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t0, -20($fp)
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+.L45:		# FUNCTION EXIT
+	lw      $ra, 0($fp)	#load return address
+	move    $t0, $fp	#save control link
+	lw      $fp, -4($fp)	#restore FP
+	move    $sp, $t0	#restore SP
+	jr      $ra		#return
+	.text
+_ifStmts:		# FUNCTION ENTRY
+	sw      $ra, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $fp, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	addu    $fp, $sp, 8
+	subu    $sp, $sp, 28
+				#WRITE STR
+	.data
+.L58:	.asciiz "////// If statements //////////\n"
+	.text
+	la      $t0, .L58
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	li      $t0, 0
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $t0, 0
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -12($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -20($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	bne     $t1, $t2, .L60	#check if equal
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	b       .L59
+.L59:
+				#WRITE STR
+	.data
+.L61:	.asciiz "yes: x == y"
+	.text
+	la      $t0, .L61
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+.L60:
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	bne     $t1, $t2, .L63	#check if equal
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	b       .L62
+.L62:
+				#WRITE STR
+	.data
+.L64:	.asciiz "this test failed!!!!!!!!!!!"
+	.text
+	la      $t0, .L64
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+.L63:
+				#WRITE STR
+	.data
+.L65:	.asciiz "////// If-Else statements //////////\n"
+	.text
+	la      $t0, .L65
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	bne     $t1, $t2, .L67	#check if equal
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	b       .L66
+.L66:
+				#WRITE STR
+	.data
+.L69:	.asciiz "inside if block: x == y\n"
+	.text
+	la      $t0, .L69
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	b       .L68		#skip else statements
+.L67:
+				#WRITE STR
+	.data
+.L70:	.asciiz "this test failed!!!!!!!!!!!\n"
+	.text
+	la      $t0, .L70
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+.L68:
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	bne     $t1, $t2, .L72	#check if equal
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	b       .L71
+.L71:
+				#WRITE STR
+	.data
+.L74:	.asciiz "this test failed!!!!!!!!!!!\n"
+	.text
+	la      $t0, .L74
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	b       .L73		#skip else statements
+.L72:
+				#WRITE STR
+	.data
+.L75:	.asciiz "inside else block: x != z\n"
+	.text
+	la      $t0, .L75
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+.L73:
+	j       .L57		#jump to function end
+.L57:		# FUNCTION EXIT
+	lw      $ra, 0($fp)	#load return address
+	move    $t0, $fp	#save control link
+	lw      $fp, -4($fp)	#restore FP
+	move    $sp, $t0	#restore SP
+	jr      $ra		#return
+	.text
+_loops:		# FUNCTION ENTRY
+	sw      $ra, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $fp, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	addu    $fp, $sp, 8
+	subu    $sp, $sp, 28
+				#WRITE STR
+	.data
+.L77:	.asciiz "////// While loops /////////\n"
+	.text
+	la      $t0, .L77
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	li      $t0, 0
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $t0, 4
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -12($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -20($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printxyz		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+.L78:
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	bne     $t1, $t2, .L80	#check if equal
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	b       .L79
+.L79:
+				#WRITE STR
+	.data
+.L81:	.asciiz "this test failed!!!!!!!!!!!\n"
+	.text
+	la      $t0, .L81
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	b       .L78		#check while condition
+.L80:
+				#WRITE STR
+	.data
+.L82:	.asciiz "while x < 7; x++\n"
+	.text
+	la      $t0, .L82
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+.L83:
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	li      $t0, 7
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	bge     $t1, $t2, .L85	#check if less than
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	b       .L84
+.L84:
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	addi    $t1, $t2, 1	#increase by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printx		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	b       .L83		#check while condition
+.L85:
+.L76:		# FUNCTION EXIT
+	lw      $ra, 0($fp)	#load return address
+	move    $t0, $fp	#save control link
+	lw      $fp, -4($fp)	#restore FP
+	move    $sp, $t0	#restore SP
+	jr      $ra		#return
+	.text
+_pow:		# FUNCTION ENTRY
+	sw      $ra, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $fp, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	addu    $fp, $sp, 16
+	subu    $sp, $sp, 12
+	lw      $t1, 0($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -12($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+.L87:
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -4($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	bge     $t1, $t2, .L89	#check if less than
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	b       .L88
+.L88:
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	addi    $t1, $t2, 1	#increase by 1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 0($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	mult    perform multiplication, $t1, $t2
+	mflo    $t1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -12($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	b       .L87		#check while condition
+.L89:
+	lw      $t1, -12($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $v0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	j       .L86		#jump to function end
+.L86:		# FUNCTION EXIT
+	lw      $ra, -8($fp)	#load return address
+	move    $t0, $fp	#save control link
+	lw      $fp, -12($fp)	#restore FP
+	move    $sp, $t0	#restore SP
+	jr      $ra		#return
+	.text
+_recurse:		# FUNCTION ENTRY
+	sw      $ra, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $fp, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	addu    $fp, $sp, 20
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -4($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	bne     $t1, $t2, .L92	#check if equal
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	b       .L91
+.L91:
+	lw      $t1, 0($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $v0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	j       .L90		#jump to function end
+.L92:
+				#WRITE STR
+	.data
+.L93:	.asciiz "recursing... i="
+	.text
+	la      $t0, .L93
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t0, -8($fp)
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _newline		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 0($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 0($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -4($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	add     $t1, $t1, $t2	#perform addition
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _recurse		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	mult    perform multiplication, $t1, $t2
+	mflo    $t1
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $v0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	j       .L90		#jump to function end
+.L90:		# FUNCTION EXIT
+	lw      $ra, -12($fp)	#load return address
+	move    $t0, $fp	#save control link
+	lw      $fp, -16($fp)	#restore FP
+	move    $sp, $t0	#restore SP
+	jr      $ra		#return
+	.text
+_recursepow:		# FUNCTION ENTRY
+	sw      $ra, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $fp, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	addu    $fp, $sp, 16
+	lw      $t1, -4($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	li      $t0, 0
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	bne     $t1, $t2, .L96	#check if equal
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	b       .L95
+.L95:
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $v0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	j       .L94		#jump to function end
+.L96:
+	lw      $t1, 0($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -4($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	li      $t0, 1
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _recurse		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $v0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	j       .L94		#jump to function end
+.L94:		# FUNCTION EXIT
+	lw      $ra, -8($fp)	#load return address
+	move    $t0, $fp	#save control link
+	lw      $fp, -12($fp)	#restore FP
+	move    $sp, $t0	#restore SP
+	jr      $ra		#return
+	.text
+_funcCalls:		# FUNCTION ENTRY
+	sw      $ra, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $fp, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	addu    $fp, $sp, 8
+	subu    $sp, $sp, 4
+				#WRITE STR
+	.data
+.L98:	.asciiz "////////// function calls /////////\n"
+	.text
+	la      $t0, .L98
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	li      $t0, 2
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	li      $t0, 10
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _pow		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printx		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	li      $t0, 2
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	li      $t0, 10
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _recursepow		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $t1, -8($fp)
+	lw      $t0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, -8($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _printx		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+.L97:		# FUNCTION EXIT
+	lw      $ra, 0($fp)	#load return address
+	move    $t0, $fp	#save control link
+	lw      $fp, -4($fp)	#restore FP
+	move    $sp, $t0	#restore SP
+	jr      $ra		#return
+	.text
+	.globl main
+main:		# FUNCTION ENTRY
+	sw      $ra, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	sw      $fp, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	addu    $fp, $sp, 8
+	jal     _assignAndUnaryOps		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _arithmeticOps		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _comparisonOps		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _simpleStatements		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _logicalOps		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _ifStmts		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _loops		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _funcCalls		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	jal     _funcCalls		#jump to function
+	sw      $v0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	j       .L99		#jump to function end
+.L99:		# FUNCTION EXIT
 	lw      $ra, 0($fp)	#load return address
 	move    $t0, $fp	#save control link
 	lw      $fp, -4($fp)	#restore FP
