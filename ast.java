@@ -246,7 +246,6 @@ class DeclListNode extends ASTnode {
                 offset += ((DeclNode)it.next()).processNames(S, offset);
             }
             localOffset = offset;
-            System.out.println("local offset is " + localOffset);
         } catch (NoSuchElementException ex) {
             System.err.println("unexpected NoSuchElementException in DeclListNode.processNames");
             System.exit(-1);
@@ -877,7 +876,6 @@ class FnDeclNode extends DeclNode {
         localOffset = 0;
         myBody.processNames(S, localOffset);
         localOffset = myBody.getDeclList().getLocalOffset();
-        System.out.println("params " + paramOffset + " locals " + localOffset);
         sym.setParamOffset(paramOffset);
         sym.setLocalOffset(localOffset);
         try {
@@ -994,7 +992,6 @@ class FormalDeclNode extends DeclNode {
     }
 
     public int processNames(SymTab S, int offset) {
-        System.out.println("test");
         return 0;
     }
     
@@ -1105,21 +1102,18 @@ class AssignStmtNode extends StmtNode {
         myExp.codeGen();
         int varSize = myExp.sizeOfVar();
         Codegen.genPop(Codegen.T0, varSize);
-        System.out.println("assignstmtnode");
     }
     
     public void codeGen(String prologue){
         myExp.codeGen();
         int varSize = myExp.sizeOfVar();
         Codegen.genPop(Codegen.T0, varSize);
-        System.out.println("assignstmtnode");
     }
     
     public void codeGen(String prologue, int localOffset){
         myExp.codeGen(localOffset);
         int varSize = myExp.sizeOfVar();
         Codegen.genPop(Codegen.T0, varSize);
-        System.out.println("assignstmtnode");
     }
     
     // 1 kid
@@ -1155,7 +1149,6 @@ class PreIncStmtNode extends StmtNode {
     }
 
     public void codeGen(){
-        System.out.println("plus plus");
         myId.codeGen();
         Codegen.genPop(Codegen.T2, 4);
         Codegen.generateWithComment("addi", "increase by 1", Codegen.T1, Codegen.T2, "1");
@@ -1164,7 +1157,6 @@ class PreIncStmtNode extends StmtNode {
     
     
     public void codeGen(String prologue){
-        System.out.println("plus plus");
         myId.codeGen();
         Codegen.genPop(Codegen.T2, 4);
         Codegen.generateWithComment("addi", "increase by 1", Codegen.T1, Codegen.T2, "1");
@@ -1172,7 +1164,6 @@ class PreIncStmtNode extends StmtNode {
     }
     
     public void codeGen(String prologue, int localOffset){
-        System.out.println("plus plus");
         myId.codeGen(localOffset);
         Codegen.genPop(Codegen.T2, 4);
         Codegen.generateWithComment("addi", "increase by 1", Codegen.T1, Codegen.T2, "1");
@@ -1212,14 +1203,12 @@ class PreDecStmtNode extends StmtNode {
     }
     
     public void codeGen(){
-        System.out.println("minus minus");
         myId.codeGen();
         Codegen.genPop(Codegen.T2, 4);
         Codegen.generateWithComment("sub", "decrease by 1", Codegen.T1, Codegen.T1, "1");
         myId.assignVar();
     }
     public void codeGen(String prologue){
-        System.out.println("minus minus");
         myId.codeGen();
         Codegen.genPop(Codegen.T2, 4);
         Codegen.generateWithComment("sub", "decrease by 1", Codegen.T1, Codegen.T1, "1");
@@ -1227,7 +1216,6 @@ class PreDecStmtNode extends StmtNode {
     }
     
     public void codeGen(String prologue, int localOffset){
-        System.out.println("minus minus");
         myId.codeGen(localOffset);
         Codegen.genPop(Codegen.T2, 4);
         Codegen.generateWithComment("sub", "decrease by 1", Codegen.T1, Codegen.T1, "1");
@@ -1267,7 +1255,6 @@ class PostIncStmtNode extends StmtNode {
     
 
     public void codeGen(){
-        System.out.println("plus plus");
         myId.codeGen();
         Codegen.genPop(Codegen.T2, 4);
         Codegen.generateWithComment("addi", "increase by 1", Codegen.T1, Codegen.T2, "1");
@@ -1277,7 +1264,6 @@ class PostIncStmtNode extends StmtNode {
     
     
     public void codeGen(String prologue){
-        System.out.println("plus plus");
         myId.codeGen();
         Codegen.genPop(Codegen.T2, 4);
         Codegen.generateWithComment("addi", "increase by 1", Codegen.T1, Codegen.T2, "1");
@@ -1286,7 +1272,6 @@ class PostIncStmtNode extends StmtNode {
     }
     
     public void codeGen(String prologue, int localOffset){
-        System.out.println("plus plus");
         myId.codeGen(localOffset);
         Codegen.genPop(Codegen.T2, 4);
         Codegen.generateWithComment("addi", "increase by 1", Codegen.T1, Codegen.T2, "1");
@@ -1327,7 +1312,6 @@ class PostDecStmtNode extends StmtNode {
     }
     
     public void codeGen(){
-        System.out.println("minus minus");
         myId.codeGen();
         Codegen.genPop(Codegen.T2, 4);
         Codegen.generateWithComment("sub", "decrease by 1", Codegen.T1, Codegen.T1, "1");
@@ -1335,7 +1319,6 @@ class PostDecStmtNode extends StmtNode {
         Codegen.genPush(Codegen.T2, 4);
     }
     public void codeGen(String prologue){
-        System.out.println("minus minus");
         myId.codeGen();
         Codegen.genPop(Codegen.T2, 4);
         Codegen.generateWithComment("sub", "decrease by 1", Codegen.T1, Codegen.T1, "1");
@@ -1344,7 +1327,6 @@ class PostDecStmtNode extends StmtNode {
     }
     
     public void codeGen(String prologue, int localOffset){
-        System.out.println("minus minus");
         myId.codeGen(localOffset);
         Codegen.genPop(Codegen.T2, 4);
         Codegen.generateWithComment("sub", "decrease by 1", Codegen.T1, Codegen.T1, "1");
@@ -2261,10 +2243,8 @@ class IdNode extends ExpNode {
                 Codegen.genPush(Codegen.T1, 4);
             }
             else{
-                System.out.println(mySym.getFPOffset());
                 Codegen.generateIndexed("lw", Codegen.T1, Codegen.FP, mySym.getFPOffset() - 8);
                 Codegen.genPush(Codegen.T1, 4);
-                System.out.println(myStrVal + "codeGen local FPOffset " + mySym.getFPOffset());
             }
         }
         else{
@@ -2284,9 +2264,7 @@ class IdNode extends ExpNode {
                 Codegen.genPush(Codegen.T1, 4);
             }
             else{
-                System.out.println(mySym.getFPOffset());
                 int temp = localOffset + mySym.getFPOffset() - 8;
-                System.out.println(myStrVal + "  " + temp);
                 if (mySym.getParam()){
                     Codegen.generateIndexed("lw", Codegen.T1, Codegen.FP, mySym.getFPOffset());
                 }
@@ -2313,10 +2291,7 @@ class IdNode extends ExpNode {
                 Codegen.generate("sw", Codegen.T1, "_" + myStrVal);
             }
             else{
-                System.out.println(mySym.getFPOffset());
-                //System.out.println(mySym.getOffset());
                 Codegen.genPush(Codegen.T1, 4);
-                System.out.println(myStrVal + "codeGen local FPOffset " + mySym.getFPOffset());
                 Codegen.generateIndexed("sw", Codegen.T1, Codegen.FP, mySym.getFPOffset() - 8);
             }
         }
@@ -2337,11 +2312,8 @@ class IdNode extends ExpNode {
                 Codegen.generate("sw", Codegen.T1, "_" + myStrVal);
             }
             else{
-                System.out.println(mySym.getFPOffset());
-                //System.out.println(mySym.getOffset());
                 Codegen.genPush(Codegen.T1, 4);
                 int temp = localOffset + mySym.getFPOffset() - 8;
-                System.out.println(myStrVal + "  " + temp);
                 if (mySym.getParam()){
                  Codegen.generateIndexed("sw", Codegen.T1, Codegen.FP, mySym.getFPOffset());
                 }
@@ -2369,7 +2341,6 @@ class IdNode extends ExpNode {
             else{
                 Codegen.generateIndexed("lw", Codegen.T0, Codegen.FP, mySym.getFPOffset() - 8);
                 Codegen.genPush(Codegen.T0, 4);
-                System.out.println(myStrVal + "codeGen local FPOffset " + mySym.getFPOffset());
             }
         }
         else{
@@ -2390,7 +2361,6 @@ class IdNode extends ExpNode {
             }
             else{
                 int temp = localOffset + mySym.getFPOffset() - 8;
-                System.out.println(myStrVal + "  " + temp);
                 if (mySym.getParam()){
                     Codegen.generateIndexed("lw", Codegen.T0, Codegen.FP, mySym.getFPOffset());
                 }
@@ -2485,7 +2455,6 @@ class CallExpNode extends ExpNode {
 	// check number of args
 	FnSym s = (FnSym)myId.sym();
 	if (s == null) {
-	    System.out.println("null sym for ID in CallExpNode.typeCheck");
 	    System.exit(-1);
 	}
 
@@ -2644,7 +2613,6 @@ class PlusPlusNode extends UnaryExpNode {
     }
     
     public void codeGen(){
-        System.out.println("plus plus");
         myExp.codeGen();
         Codegen.genPop(Codegen.T2, 4);
         Codegen.generateWithComment("addi", "increase by 1", Codegen.T1, Codegen.T2, "1");
@@ -2653,7 +2621,6 @@ class PlusPlusNode extends UnaryExpNode {
     }
     
     public void codeGen(int localOffset){
-        System.out.println("plus plus");
         myExp.codeGen(localOffset);
         Codegen.genPop(Codegen.T2, 4);
         Codegen.generateWithComment("addi", "increase by 1", Codegen.T1, Codegen.T2, "1");
@@ -2697,7 +2664,6 @@ class MinusMinusNode extends UnaryExpNode {
     }
     
     public void codeGen(){
-        System.out.println("minus minus");
         myExp.codeGen();
         Codegen.genPop(Codegen.T2, 4);
         Codegen.generateWithComment("sub", "decrease by 1", Codegen.T1, Codegen.T1, "1");
@@ -2706,7 +2672,6 @@ class MinusMinusNode extends UnaryExpNode {
     }
     
     public void codeGen(int localOffset){
-        System.out.println("minus minus");
         myExp.codeGen(localOffset);
         Codegen.genPop(Codegen.T2, 4);
         Codegen.generateWithComment("sub", "decrease by 1", Codegen.T1, Codegen.T1, "1");
@@ -2747,7 +2712,6 @@ class UnaryMinusNode extends UnaryExpNode {
     }
     
     public void codeGen(){
-        System.out.println("minus minus");
         myExp.codeGen();
         Codegen.genPop(Codegen.T1, 4);
         Codegen.generate("li", Codegen.T2, "-1");
@@ -2758,7 +2722,6 @@ class UnaryMinusNode extends UnaryExpNode {
     }
     
     public void codeGen(int localOffset){
-        System.out.println("minus minus");
         myExp.codeGen(localOffset);
         Codegen.genPop(Codegen.T1, 4);
         Codegen.generate("li", Codegen.T2, "-1");
@@ -2793,7 +2756,6 @@ class NotNode extends UnaryExpNode {
     }
     
     public void codeGen(){
-        System.out.println("not");
         myExp.codeGen();
         Codegen.genPop(Codegen.T1, 4);
         Codegen.generate("not", Codegen.T1, Codegen.T1);
@@ -2801,7 +2763,6 @@ class NotNode extends UnaryExpNode {
     }
     
     public void codeGen(int localOffset){
-        System.out.println("not");
         myExp.codeGen(localOffset);
         Codegen.genPop(Codegen.T1, 4);
         Codegen.generate("not", Codegen.T1, Codegen.T1);
@@ -2890,7 +2851,6 @@ class AssignNode extends BinaryExpNode {
             //Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());
         }    
         else{
-            System.out.println("local not global");
             ((IdNode)myExp1).assignVar();
             //Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());
         }    
@@ -2905,7 +2865,6 @@ class AssignNode extends BinaryExpNode {
             //Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());
         }    
         else{
-            System.out.println("local not global");
             ((IdNode)myExp1).assignVar(localOffset);
             //Codegen.genPush(Codegen.T1, myExp2.sizeOfVar());
         }    
