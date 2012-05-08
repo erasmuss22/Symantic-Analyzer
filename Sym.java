@@ -29,6 +29,7 @@ class Sym {
         else this.offset = 8;
         global = false;
         FPoffset = 0;
+        isParam = false;
     }
 
     public Sym(String T, boolean comp) {
@@ -40,6 +41,14 @@ class Sym {
 	return myType;
     }
 
+    public void setParam(){
+        this.isParam = true;
+    }
+    
+    public boolean getParam(){
+        return this.isParam;
+    }
+    
     public String toString() {
 	return "";
     }
@@ -74,6 +83,7 @@ class Sym {
     private int offset;
     private int FPoffset;
     private boolean global;
+    private boolean isParam;
 }
 
 // **********************************************************************

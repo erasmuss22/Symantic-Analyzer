@@ -1,0 +1,26 @@
+void printxyz(int x, int y, int z){
+   printf("%d", x);
+   printf("%d", y);
+   printf("%d", z);
+}
+
+int getInt(int a){
+   int x;
+   int y;
+   int z;
+   x = 1;
+   y = 2;
+   z = 3;
+   printxyz(x, y, z);
+   x = 5;
+   printxyz(x, y, z);
+   printxyz(a, y, z);
+   return 9;
+}
+void main(){
+   int a;
+   int b;
+   a = 7;
+   b = getInt(a);
+   printf("%d", b);
+}

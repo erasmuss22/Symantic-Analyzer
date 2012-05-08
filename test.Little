@@ -1,8 +1,24 @@
-void main() {
-   int x;
+void printxyz(int x, int y, int z) {
+  printf("%d", x);
+  printf("\n");
+printf("%d", y);
+  printf("\n");
+printf("%d", z);
+  printf("\n");
+}
+void printInt(int x){
+   int u;
    int y;
-   scanf("%d", &x);
-   --x;
-   printf("%d", y);
+   u = 3;
+   y = 4;
    printf("%d", x);
+  printf("\n");
+  printxyz(x, u, y);
+  y = 6;
+  printxyz(y, u, x);
+}
+void main(){
+   int a;
+   a = 7;
+  printInt(a);
 }

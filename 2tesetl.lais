@@ -1,0 +1,18 @@
+void printxyz(int x){
+   printf("%d", x);
+}
+
+void getInt(int a){
+   int x;
+   x = 3;
+   printxyz(a);
+   printf("%d", a);
+   return;
+}
+void main(){
+   int a;
+   int b;
+   a = 7;
+   getInt(a);
+   /* b = getInt(a); */
+}
