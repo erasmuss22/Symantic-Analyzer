@@ -61,6 +61,86 @@ _printxyz:		# FUNCTION ENTRY
 	addu    $sp, $sp, 4
 	li      $v0, 4
 	syscall			#write a string
+	lw      $t1, 0($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	sw      $t2, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t1, -4($fp)
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $t2, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	lw      $t1, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	bne     $t1, $t2, .L5	#check if equal
+	sw      $t1, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	b       .L4
+.L4:
+				#WRITE STR
+	.data
+.L7:	.asciiz "x equals y\n"
+	.text
+	la      $t0, .L7
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t0, 0($fp)
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+				#WRITE STR
+	.data
+.L8:	.asciiz "\n"
+	.text
+	la      $t0, .L8
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	b       .L6		#skip else statements
+.L5:
+				#WRITE STR
+	.data
+.L9:	.asciiz "x does not equal y\n"
+	.text
+	la      $t0, .L9
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+	lw      $t0, 0($fp)
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 1
+	syscall			#write an Integer
+				#WRITE STR
+	.data
+.L10:	.asciiz "\n"
+	.text
+	la      $t0, .L10
+	sw      $t0, 0($sp)	#PUSH
+	subu    $sp, $sp, 4
+	lw      $a0, 4($sp)	#POP
+	addu    $sp, $sp, 4
+	li      $v0, 4
+	syscall			#write a string
+.L6:
 .L0:		# FUNCTION EXIT
 	lw      $ra, -12($fp)	#load return address
 	move    $t0, $fp	#save control link
@@ -104,9 +184,9 @@ _printInt:		# FUNCTION ENTRY
 	syscall			#write an Integer
 				#WRITE STR
 	.data
-.L5:	.asciiz "\n"
+.L12:	.asciiz "\n"
 	.text
-	la      $t0, .L5
+	la      $t0, .L12
 	sw      $t0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
 	lw      $a0, 4($sp)	#POP
@@ -147,7 +227,7 @@ _printInt:		# FUNCTION ENTRY
 	jal     _printxyz		#jump to function
 	sw      $v0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
-.L4:		# FUNCTION EXIT
+.L11:		# FUNCTION EXIT
 	lw      $ra, -4($fp)	#load return address
 	move    $t0, $fp	#save control link
 	lw      $fp, -8($fp)	#restore FP
@@ -178,7 +258,7 @@ main:		# FUNCTION ENTRY
 	jal     _printInt		#jump to function
 	sw      $v0, 0($sp)	#PUSH
 	subu    $sp, $sp, 4
-.L6:		# FUNCTION EXIT
+.L13:		# FUNCTION EXIT
 	lw      $ra, 0($fp)	#load return address
 	move    $t0, $fp	#save control link
 	lw      $fp, -4($fp)	#restore FP

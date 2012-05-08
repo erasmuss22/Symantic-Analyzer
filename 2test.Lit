@@ -5,16 +5,6 @@ printf("%d", y);
   printf("\n");
 printf("%d", z);
   printf("\n");
-  if (x == y){
-    printf("x equals y\n");
-    printf("%d", x);
-printf("\n");
-  }
-else {
-   printf("x does not equal y\n");
-printf("%d", x);
-printf("\n");
-} 
 }
 void printInt(int x){
    int u;
